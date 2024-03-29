@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { get_age_normalized, sortedByAgeNormalisedAsc, type AgeNormalisedResult } from './age_helper';
 
 const BRAVE_WEB_SEARCH_API_ENDPOINT: string = 'https://api.search.brave.com/res/v1/web/search';
 const BRAVE_NEWS_SEARCH_API_ENDPOINT: string = 'https://api.search.brave.com/res/v1/news/search';
@@ -58,6 +59,21 @@ export interface BraveWebSearchResult {
     extra_snippets: string[];
 }
 
+
+
+export interface MySearchResult extends AgeNormalisedResult {
+    url: string;
+    title: string;
+    description: string;
+    page_age?: string;
+    language: string;
+    type: string;
+    subtype: string;
+    age?: string;
+    age_normalized: string;
+    extra_snippets: string[];
+}
+
 export class BraveSearchService {
     private async fetchFromBraveAPI(endpoint: string, parameter: string, value: string): Promise<Response> {
         const url = `${endpoint}?${parameter}=${encodeURIComponent(value)}${DEFAULT_SEARCH_PARAMS}`;
@@ -73,6 +89,28 @@ export class BraveSearchService {
     public async fetchBraveWebSearchResults(query: string): Promise<BraveWebSearchResponse> {
         const response = await this.fetchFromBraveAPI(BRAVE_WEB_SEARCH_API_ENDPOINT, 'q', query);
         return response.json();
+    }
+
+    // TODO this is only tested via endpoint as the logic moved here
+    public async fetchBraveWebSearchMyResults(query: string): Promise<MySearchResult[]> {
+        const r = await this.fetchBraveWebSearchResults(query);
+        const simplifiedResults: MySearchResult[] = r.web.results.map(this.toMySearchResult);
+        return sortedByAgeNormalisedAsc(simplifiedResults);
+    }
+
+    private toMySearchResult(result: BraveWebSearchResult): MySearchResult {
+        return {
+            url: result.url,
+            title: result.title,
+            description: result.description,
+            page_age: result.page_age,
+            language: result.language,
+            type: result.type,
+            subtype: result.subtype,
+            age: result.age,
+            age_normalized: get_age_normalized(result),
+            extra_snippets: result.extra_snippets
+        };
     }
 
     public async fetchBraveNewsSearchResults(query: string): Promise<Response> {

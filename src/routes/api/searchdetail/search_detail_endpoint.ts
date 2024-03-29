@@ -1,14 +1,13 @@
 import { json } from '@sveltejs/kit';
-import { BraveSearchService } from './brave_search';
+import type { BraveSearchDetailService } from './brave_search_detail';
 
 const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
 
+export class BraveSearchDetailEndpoint {
+    private braveSearchDetailService: BraveSearchDetailService;
 
-export class BraveSearchEndpoint {
-    private braveSearchService: BraveSearchService;
-
-    constructor(braveSearchService: BraveSearchService) {
-        this.braveSearchService = braveSearchService;
+    constructor(braveSearchDetailService: BraveSearchDetailService) {
+        this.braveSearchDetailService = braveSearchDetailService;
     }
 
     public async search(url: URL, request: Request): Promise<Response> {
@@ -21,7 +20,7 @@ export class BraveSearchEndpoint {
         }
     
         try {
-            const data = await this.braveSearchService.fetchBraveWebSearchMyResults(query);
+            const data = await this.braveSearchDetailService.fetchDetails(query);
             return json(data);
         } catch (err) {
             console.error(err);

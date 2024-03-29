@@ -6,7 +6,7 @@ export interface FetchURLResult {
   success: boolean;
 }
 
-export class URLContentFetcher {
+export class UrlContentFetcher {
   private DL_TIMEOUT_MS = 1000;
 
   public async fetchURLs(urls: string[]): Promise<FetchURLResult[]> {

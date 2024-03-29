@@ -3,12 +3,21 @@ import { HTMLParser } from './html_parser';
 
 describe('HTML Parser Tests', () => {
   it.each([
-    ["<html><head></head><body><p>Test content</p></body></html>", "<body><p>Test content</p></body>"],
-    ["<html><body><div>Another test</div></body></html>", "<body><div>Another test</div></body>"],
+    ["<html><head></head><body><p>Test content</p></body></html>", "<p>Test content</p>"],
+    ["<html><body><div>Another test</div></body></html>", "<div>Another test</div>"],
     ["<div>Only part of html</div>", "<div>Only part of html</div>"],
     ["Not actually html", "Not actually html"],
   ])('should extract content part from HTML', (inputHtml, contentPart) => {
-    expect(new HTMLParser().extractContentPartFromHTML(inputHtml)).toBe(contentPart);
+    expect(new HTMLParser().extractContentPartFromHtml(inputHtml).html()).toBe(contentPart);
+  });
+
+  it.each([
+    ["<html><head></head><body><p><article>Test content</article></p></body></html>", "Test content"],
+    ["<html><body><div><article>Another test</article></div></body></html>", "Another test"],
+    ["<div>Only part of html</div>", "<div>Only part of html</div>"],
+    ["Not actually html", "Not actually html"],
+  ])('should extract article part from HTML', (inputHtml, articlePart) => {
+    expect(new HTMLParser().extractContentPartFromHtml(inputHtml, 'article').html()).toBe(articlePart);
   });
 
   it.each([
@@ -28,8 +37,8 @@ describe('HTML Parser Tests', () => {
     const url = "http://example.com";
     const htmlContent = "<html><body><article>Test content</article></body></html>";
     const result = new HTMLParser().createDocFromPlainHtmlContent(url, htmlContent);
-    expect(result.text.trim()).toBe("Test content");
-    expect(result.metadata['source_id']).toBe(url);
-    expect(result.metadata['source_type']).toBe("html");
+    expect(result.content.trim()).toBe("Test content");
+    expect(result.meta.source_id).toBe(url);
+    expect(result.meta.source_type).toBe("html");
   });
 });

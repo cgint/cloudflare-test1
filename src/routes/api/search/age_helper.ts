@@ -1,6 +1,9 @@
 import { format, parseISO } from 'date-fns';
 import type { BraveWebSearchResult } from './brave_search';
-import type { AgeNormalisedResult } from './search_endpoint';
+
+export interface AgeNormalisedResult {
+    age_normalized: string;
+}
 
 const AGE_NORMALIZED_FORMAT = 'dd.MM.yyyy';
 
@@ -20,7 +23,7 @@ export function get_age_normalized(result: BraveWebSearchResult): string {
     }
 }   
 
-export function sortedByAgeNormalisedAsc(results: AgeNormalisedResult[]): AgeNormalisedResult[] {
+export function sortedByAgeNormalisedAsc<T extends AgeNormalisedResult>(results: T[]): T[] {
     return results.sort((a, b) => {
         if (a.age_normalized === '') return 1;
         if (b.age_normalized === '') return -1;
