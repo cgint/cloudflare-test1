@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { BraveSearchDetailService } from './brave_search_detail';
+import { QueryVector } from './query_vector';
 
 const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
 
@@ -21,7 +22,10 @@ export class BraveSearchDetailEndpoint {
     
         try {
             const data = await this.braveSearchDetailService.fetchDetails(query);
-            return json(data);
+            const docs = this.braveSearchDetailService.toDocuments(data);
+            const v = new QueryVector();
+            const result = await v.query(query, docs);
+            return json({ vector: result, plain: data });
         } catch (err) {
             console.error(err);
             return json({ error: JSON.stringify(err) }, { status: 500 });

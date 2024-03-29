@@ -1,5 +1,6 @@
 import type { BraveSearchService, BraveWebSearchResult, MySearchResult } from '../search/brave_search';
 import { UrlContentFetcher, type FetchURLResult } from './url_content_fetcher';
+import { Document } from "@langchain/core/documents";
 
 export interface BraveWebSearchDetailResult extends BraveWebSearchResult {
     textContent: string;
@@ -19,10 +20,19 @@ export class BraveSearchDetailService {
         this.urlContentFetcher = urlContentFetcher;
     }
 
-    public async fetchDetails(query: string): Promise<MyDetailSearchResult[]> {
+    public async fetchDetails(query: string, limit: number = 10): Promise<MyDetailSearchResult[]> {
         const results: MySearchResult[] = await this.braveSearchService.fetchBraveWebSearchMyResults(query);
-        const textContents: FetchURLResult[] = await this.urlContentFetcher.fetchURLs(results.map(result => result.url));
-        return results.map((result, index) => ({ ...result, textContent: `OK ? ${textContents[index].success} - content: ${textContents[index].value}` }));
+        const limitedResults = results.slice(0, limit);
+        const limitedResultUrls = limitedResults.map(result => result.url);
+        const textContents: FetchURLResult[] = await this.urlContentFetcher.fetchURLs(limitedResultUrls);
+        return limitedResults.map((result, index) => ({ ...result, textContent: textContents[index].value }));
+    }
+
+    public toDocuments(pages: MyDetailSearchResult[]): Document[] {
+        return pages.map((page) => new Document({
+            pageContent: page.textContent,
+            metadata: { source: "webpage", url: page.url },
+        }));
     }
 }
 

@@ -22,7 +22,7 @@ export class UrlContentFetcher {
           val = await result.value.text();
           val = this.htmlParser.cleanHTMLContent(val);
         }
-        console.log(`Success from ${url}:`, val);
+        console.log(`Success from ${url}`);
       } else {
         val = result.reason.message;
         console.error(`Error fetching ${url}:`, val);
