@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { fetchWithTimeout } from "./fetch_timeout";
+import { HtmlParser as HtmlParser } from "./html_parser";
 
 export interface FetchURLResult {
   url: string;
@@ -7,32 +8,31 @@ export interface FetchURLResult {
 }
 
 export class UrlContentFetcher {
-  private DL_TIMEOUT_MS = 1000;
+  private DL_TIMEOUT_MS = 5000;
+  private htmlParser: HtmlParser = new HtmlParser();
 
   public async fetchURLs(urls: string[]): Promise<FetchURLResult[]> {
-    return this.downloadURLs(urls, this.DL_TIMEOUT_MS).then(results => {
-      return results.map((result, index) => {
-        let url = urls[index];
-        let success = result.status === 'fulfilled';
-        let val: any = null;
-        if (result.status === 'fulfilled') { // without this duplication the compiler can not infer the type of result
-          val = result.value.data;
-          console.log(`Success from ${url}:`, val);
-        } else {
-          val = result.reason.message;
-          console.error(`Error fetching ${url}:`, val);
+    const results: PromiseSettledResult<void | globalThis.Response>[] = await this.downloadURLs(urls, this.DL_TIMEOUT_MS);
+    return await Promise.all(results.map(async (result, index) => {
+      let url = urls[index];
+      let success = result.status === 'fulfilled';
+      let val: string = "";
+      if (result.status === 'fulfilled') { // without this duplication the compiler can not infer the type of result
+        if(result.value instanceof globalThis.Response) {
+          val = await result.value.text();
+          val = this.htmlParser.cleanHTMLContent(val);
         }
-        return { url: url, value: val, success: success };
-      });
-    });
+        console.log(`Success from ${url}:`, val);
+      } else {
+        val = result.reason.message;
+        console.error(`Error fetching ${url}:`, val);
+      }
+      return { url: url, value: val, success: success };
+    }));
   }
 
-  private downloadURLs(urls: string[], timeout: number) {
-    const promises = urls.map(url => this.fetchURLWithTimeout(url, timeout));
+  private downloadURLs(urls: string[], timeout: number): Promise<PromiseSettledResult<void | globalThis.Response>[]> {
+    const promises = urls.map(url => fetchWithTimeout(url, timeout));
     return Promise.allSettled(promises);
-  }
-
-  private fetchURLWithTimeout(url: string, timeout: number) {
-    return axios.get(url, { timeout });
   }
 }

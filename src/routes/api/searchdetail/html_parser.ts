@@ -10,7 +10,7 @@ export interface DocumentWithMeta {
   };
 }
 
-export class HTMLParser {
+export class HtmlParser {
   public extractContentPartFromHtml(plainHTMLContent: string, initialTag: string = "body"): Cheerio<AnyNode> {
     const $: CheerioAPI = load(plainHTMLContent);
     let contentPart = $(initialTag);
@@ -20,7 +20,8 @@ export class HTMLParser {
     if (contentPart.length === 0) {
       return $();
     }
-    return contentPart.remove('script, style');
+    contentPart.find('script, style').remove();
+    return contentPart;
   }
 
   public cleanHTMLContent(plainHTMLContent: string): string {
