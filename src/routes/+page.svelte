@@ -159,11 +159,12 @@
 	}
 	input.token {
 		float: right;
-		width: 200px;
+		width: 50px;
 	}
 
 	button {
-		width: 200px;
+		width: 180px;
+		white-space: nowrap;
 		padding: 8px 12px;
 		background-color: rgb(134, 162, 217);
 		color: #333;
