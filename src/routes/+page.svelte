@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	let token: string = "";
 	interface Vector {
 		result: string;
@@ -9,7 +10,6 @@
 		};
 	}
 	let question: string = "";
-	import { onMount } from 'svelte';
 
 	onMount(() => {
 		question = import.meta.env.VITE_DEMO_QUESTION || "";
@@ -47,8 +47,8 @@
 					vector = details_obj.vector;
 					answer = vector.result;
 				} else {
-					const error_response: any = await response.json();
-					answer = "Unable to search for answer due to '" + error_response.error + "'";
+					const error_response: any = await response.text();
+					answer = "Unable to search for answer due to '" + error_response + "'";
 				}
 			}).catch((error) => {
 				console.error("Error fetching search details:", error);
