@@ -9,6 +9,7 @@
 			splitCount: number;
 		};
 	}
+	let RR_EMPTY = {result: "", docsConsidered: [], stats: {docCount: 0, splitCount: 0}};
 	let question: string = "";
 
 	onMount(() => {
@@ -17,10 +18,10 @@
 	});
 	let processing_question: boolean = false;
 	let answer: string = ""; 
-	let vector: Vector = {result: "", docsConsidered: [], stats: {docCount: 0, splitCount: 0}}; 
+	let rag_result: Vector = RR_EMPTY; 
 	let responsedetails: string = ""; 
 
-	async function fetchSearchDetails() {
+	async function searchForAnswer() {
 		if (question.trim() === "") {
 			answer = "Please enter a valid question";
 			return;
@@ -30,6 +31,7 @@
 		}
 		console.log("processing question: " + question);
 		answer = "";
+		rag_result = RR_EMPTY;
 		responsedetails = "";
 		processing_question = true;
 		const formattedQuestion = encodeURIComponent(question);
@@ -44,8 +46,8 @@
 				if (response.status === 200) {
 					responsedetails = await response.text();
 					let details_obj = JSON.parse(responsedetails);
-					vector = details_obj.vector;
-					answer = vector.result;
+					rag_result = details_obj.vector;
+					answer = rag_result.result;
 				} else {
 					const error_response: any = await response.text();
 					answer = "Unable to search for answer due to '" + error_response + "'";
@@ -59,10 +61,6 @@
 			console.error("Error fetching search details:", error);
 		}
 	}
-
-	async function handleSubmit() {
-		await fetchSearchDetails();
-	}
 </script>
 
 <svelte:head>
@@ -73,7 +71,7 @@
 <section>
 	<h1>Hello, I am your Web Search Assistant!</h1>
 	<i>Enter a question and I'll do the rest.</i>
-	<form on:submit|preventDefault={handleSubmit}>
+	<form on:submit|preventDefault={searchForAnswer}>
 		<input class="question" type="text" bind:value={question}
 			placeholder="Ask your question here..."/>
 		<button type="submit" class:processing={processing_question}>{processing_question ? "Processing..." : "Query for answer"}</button>
@@ -92,8 +90,8 @@
 	</div>
 
 	<div class="outputsection considered">
-		<p>Considered pieces of information: (Doc Count: {vector.stats.docCount}, Split Count: {vector.stats.splitCount})</p>
-		{#each vector.docsConsidered as doc}
+		<p>Considered pieces of information: (Doc Count: {rag_result.stats.docCount}, Split Count: {rag_result.stats.splitCount})</p>
+		{#each rag_result.docsConsidered as doc}
 			<a href={doc.url} target="_blank">{doc.url}</a>
 			<div class="docsnippet">{doc.contentSnippet}</div>
 		{/each}
