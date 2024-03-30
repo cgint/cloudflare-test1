@@ -38,12 +38,12 @@ export class BraveSearchDetailEndpoint {
             return json({ vector: result, plain: data });
         } catch (err) {
             console.error("search error", err);
-            return json({ error: this.exceptionToString(err) }, { status: 500 });
+            return json({ error: this.exceptionToString(stage, err) }, { status: 500 });
         }
     };
 
-    private exceptionToString(err: any): string {
-        return `Type: ${typeof err} - ${JSON.stringify(err)}`;
+    private exceptionToString(stage: number,err: any): string {
+        return `Stage: ${stage} - Type: ${typeof err} - ${JSON.stringify(err)}`;
     }
 
     private checkBearerToken(url: URL, req: Request): boolean {
