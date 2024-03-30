@@ -42,8 +42,8 @@ export class BraveSearchDetailEndpoint {
         }
     };
 
-    private exceptionToString(stage: number,err: any): string {
-        return `Stage: ${stage} - Type: ${typeof err} - ${JSON.stringify(err)}`;
+    private exceptionToString(stage: number, err: any): string {
+        return `Stage: ${stage} - Type: ${typeof err} - Message: ${err.message} - ${JSON.stringify(err)}`;
     }
 
     private checkBearerToken(url: URL, req: Request): boolean {
