@@ -1,6 +1,8 @@
 import { fetchWithTimeout } from "./fetch_timeout";
 import { HtmlParser as HtmlParser } from "./html_parser";
 
+const DL_MAX_CONCURRENCY = parseInt(import.meta.env.VITE_DL_MAX_CONCURRENCY || '5');
+
 export interface FetchURLResult {
   url: string;
   value: string;
@@ -31,8 +33,27 @@ export class UrlContentFetcher {
     }));
   }
 
-  private downloadURLs(urls: string[], timeout: number): Promise<PromiseSettledResult<void | globalThis.Response>[]> {
-    const promises = urls.map(url => fetchWithTimeout(url, timeout));
-    return Promise.allSettled(promises);
+  private async downloadURLs(urls: string[], timeout: number): Promise<PromiseSettledResult<void | globalThis.Response>[]> {
+    const chunkedUrls = this.chunkUrls(urls, DL_MAX_CONCURRENCY);
+    let allResults: PromiseSettledResult<void | globalThis.Response>[] = [];
+    for (const chunk of chunkedUrls) {
+      const promises = chunk.map(url => fetchWithTimeout(url, timeout));
+      const results = await Promise.allSettled(promises);
+      allResults = [...allResults, ...results];
+    }
+    return allResults;
   }
+
+  private chunkUrls(urls: string[], size: number): string[][] {
+    const chunks = [];
+    for (let i = 0; i < urls.length; i += size) {
+      chunks.push(urls.slice(i, i + size));
+    }
+    return chunks;
+  }
+
+  // private downloadURLs(urls: string[], timeout: number): Promise<PromiseSettledResult<void | globalThis.Response>[]> {
+  //   const promises = urls.map(url => fetchWithTimeout(url, timeout));
+  //   return Promise.allSettled(promises);
+  // }
 }
