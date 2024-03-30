@@ -21,16 +21,25 @@ export class BraveSearchDetailEndpoint {
         }
     
         try {
+            console.log("searching", query);
             const data = await this.braveSearchDetailService.fetchDetails(query);
+            console.log("about to call toDocuments");
             const docs = this.braveSearchDetailService.toDocuments(data);
+            console.log("about to call QueryVector");
             const v = new QueryVector();
+            console.log("about to call query on vector");
             const result = await v.query(query, docs);
+            console.log("about to return result");
             return json({ vector: result, plain: data });
         } catch (err) {
-            console.error(err);
-            return json({ error: JSON.stringify(err) }, { status: 500 });
+            console.error("search error", err);
+            return json({ error: this.exceptionToString(err) }, { status: 500 });
         }
     };
+
+    private exceptionToString(err: any): string {
+        return `Type: ${typeof err} - ${JSON.stringify(err)}`;
+    }
 
     private checkBearerToken(url: URL, req: Request): boolean {
         let token = req.headers.get('password');
