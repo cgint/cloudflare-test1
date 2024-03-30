@@ -82,6 +82,7 @@
 	
 	<div class="outputsection answer">
 		{#if processing_question}
+			<h2>Processing ...</h2>
 			<p>Reading news, thinking, answering. Please be patient. (Usually done in around 10 seconds)</p>
 		{:else}
 			<h2>Answer:</h2>
