@@ -25,6 +25,9 @@
 			answer = "Please enter a valid question";
 			return;
 		}
+		if (processing_question) {
+			return;
+		}
 		console.log("processing question: " + question);
 		answer = "";
 		responsedetails = "";
@@ -146,6 +149,7 @@
 		font-style: italic;
 		height: 300px;
 		overflow: scroll;
+		display: none;
 	}
 
 	input {
