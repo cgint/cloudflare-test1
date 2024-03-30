@@ -35,7 +35,7 @@
 		responsedetails = "";
 		processing_question = true;
 		const formattedQuestion = encodeURIComponent(question);
-		const url = `http://localhost:8787/api/searchdetail?query=${formattedQuestion}`;
+		const url = `/api/searchdetail?query=${formattedQuestion}`;
 
 		try {
 			await fetch(url, {
