@@ -69,38 +69,40 @@
 </svelte:head>
 
 <section>
-	<h1>Hello, I am your Web Search Assistant!</h1>
+	<h1>Hello, I am your <nobr>Web Search Assistant!</nobr></h1>
 	<i>Enter a question and I'll do the rest.</i>
-	<form on:submit|preventDefault={searchForAnswer}>
-		<input class="question" type="text" bind:value={question}
-			placeholder="Ask your question here..."/>
-		<button type="submit" class:processing={processing_question}>{processing_question ? "Processing..." : "Query for answer"}</button>
-		<input class="token" type="password" bind:value={token}
-		       placeholder="token"/>
-	</form>
+	<div class="formanddata">
+		<form on:submit|preventDefault={searchForAnswer}>
+			<input class="question" type="text" bind:value={question}
+				placeholder="Ask your question here..."/>
+			<button type="submit" class:processing={processing_question}>{processing_question ? "Processing..." : "Query for answer"}</button>
+			<input class="token" type="password" bind:value={token}
+				placeholder="token"/>
+		</form>
 
-	
-	<div class="outputsection answer">
-		{#if processing_question}
-			<h2>Processing ...</h2>
-			<p>Reading news, thinking, answering. Please be patient. (Usually done in around 10 seconds)</p>
-		{:else}
-			<h2>Answer:</h2>
-			<p class="answertext">{answer}</p>
-		{/if}
-	</div>
+		
+		<div class="outputsection answer">
+			{#if processing_question}
+				<h2>Processing ...</h2>
+				<p>Reading news, thinking, answering. Please be patient. (Usually done in around 10 seconds)</p>
+			{:else}
+				<h2>Answer:</h2>
+				<p class="answertext">{answer}</p>
+			{/if}
+		</div>
 
-	<div class="outputsection considered">
-		<p>Considered pieces of information: (Doc Count: {rag_result.stats.docCount}, Split Count: {rag_result.stats.splitCount})</p>
-		{#each rag_result.docsConsidered as doc}
-			<a href={doc.url} target="_blank">{doc.url}</a>
-			<div class="docsnippet">{doc.contentSnippet}</div>
-		{/each}
-	</div>
+		<div class="outputsection considered">
+			<p>Considered pieces of information: (Doc Count: {rag_result.stats.docCount}, Split Count: {rag_result.stats.splitCount})</p>
+			{#each rag_result.docsConsidered as doc}
+				<a href={doc.url} target="_blank">{doc.url}</a>
+				<div class="docsnippet">{doc.contentSnippet}</div>
+			{/each}
+		</div>
 
-	<div class="outputsection details">
-		<h2>Details:</h2>
-		<div class="responsedetails">{responsedetails}</div>
+		<div class="outputsection details">
+			<h2>Details:</h2>
+			<div class="responsedetails">{responsedetails}</div>
+		</div>
 	</div>
 </section>
 
@@ -112,13 +114,21 @@
 		align-items: center;
 		flex: 0.6;
 	}
+	div.formanddata {
+		width: 100%;
+	}
+	@media (min-width: 480px) {
+		div.formanddata {
+			width: 75%;
+		}
+	}
 
 	form {
-		width: 75%;
+		width: 100%;
 		margin-top: 10px;
 	}
 	.outputsection {
-		width: 75%;
+		width: 100%;
 		min-height: 100px;
 		margin-top: 10px;
 		padding: 8px 12px;
@@ -159,7 +169,7 @@
 	}
 	input.token {
 		float: right;
-		width: 50px;
+		width: 80px;
 	}
 
 	button {
