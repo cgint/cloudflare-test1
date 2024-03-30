@@ -74,22 +74,15 @@
 	<h1>Hello, I am your Web Search Assistant!</h1>
 	<i>Enter a question and I'll do the rest.</i>
 	<form on:submit|preventDefault={handleSubmit}>
-		<input class="question"
-			type="text"
-			placeholder="Ask your question here..."
-			bind:value={question}
-		/>
-		<button type="submit" class:processing={processing_question}>Query for answer</button>
-		<input class="token"
-		type="password"
-		placeholder="token"
-		bind:value={token}
-	/>
-
+		<input class="question" type="text" bind:value={question}
+			placeholder="Ask your question here..."/>
+		<button type="submit" class:processing={processing_question}>{processing_question ? "Processing..." : "Query for answer"}</button>
+		<input class="token" type="password" bind:value={token}
+		       placeholder="token"/>
 	</form>
 
 	
-	<div class="outputsection">
+	<div class="outputsection answer">
 		{#if processing_question}
 			<p>Reading news, thinking, answering. Please be patient. (Usually done in around 10 seconds)</p>
 		{:else}
@@ -98,7 +91,7 @@
 		{/if}
 	</div>
 
-	<div class="outputsection">
+	<div class="outputsection considered">
 		<p>Considered pieces of information: (Doc Count: {vector.stats.docCount}, Split Count: {vector.stats.splitCount})</p>
 		{#each vector.docsConsidered as doc}
 			<a href={doc.url} target="_blank">{doc.url}</a>
@@ -106,7 +99,7 @@
 		{/each}
 	</div>
 
-	<div class="outputsection">
+	<div class="outputsection details">
 		<h2>Details:</h2>
 		<div class="responsedetails">{responsedetails}</div>
 	</div>
@@ -145,11 +138,13 @@
 		height: 100px;
 		overflow: scroll;
 	}
+	.outputsection.details {
+		display: none;
+	}
 	.outputsection .responsedetails {
 		font-style: italic;
 		height: 300px;
 		overflow: scroll;
-		display: none;
 	}
 
 	input {
@@ -185,7 +180,7 @@
 
 	button.processing {
 		cursor: wait;
-		animation: gradientBG 2s infinite alternate;
+		animation: gradientBG 1s infinite alternate;
 	}
 	@keyframes gradientBG {
 		from {
