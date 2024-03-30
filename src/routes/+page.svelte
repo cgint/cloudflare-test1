@@ -1,31 +1,106 @@
-<script>
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+<script lang="ts">
+	let token: string = "";
+	interface Vector {
+		result: string;
+		docsConsidered: {url: string, contentSnippet: string}[];
+		stats: {
+			docCount: number;
+			splitCount: number;
+		};
+	}
+	let question: string = "When was lewis hamilton born";
+	let processing_question: boolean = false;
+	let answer: string = ""; 
+	let vector: Vector = {result: "", docsConsidered: [], stats: {docCount: 0, splitCount: 0}}; 
+	let responsedetails: string = ""; 
+
+	async function fetchSearchDetails() {
+		if (question.trim() === "") {
+			answer = "Please enter a valid question";
+			return;
+		}
+		console.log("processing question: " + question);
+		answer = "";
+		responsedetails = "";
+		processing_question = true;
+		const formattedQuestion = encodeURIComponent(question);
+		const url = `http://localhost:8787/api/searchdetail?query=${formattedQuestion}`;
+
+		try {
+			await fetch(url, {
+				headers: {
+					'password': token
+				}
+			}).then(async (response) => {
+				if (response.status === 200) {
+					responsedetails = await response.text();
+					let details_obj = JSON.parse(responsedetails);
+					vector = details_obj.vector;
+					answer = vector.result;
+				} else {
+					const error_response: any = await response.json();
+					answer = "Unable to search for answer due to '" + error_response.error + "'";
+				}
+			}).catch((error) => {
+				console.error("Error fetching search details:", error);
+			}).finally(() => {
+				processing_question = false;
+			});
+		} catch (error) {
+			console.error("Error fetching search details:", error);
+		}
+	}
+
+	async function handleSubmit() {
+		await fetchSearchDetails();
+	}
 </script>
 
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<title>Web Search Assistant</title>
+	<meta name="description" content="Web Search Assistant" />
 </svelte:head>
 
 <section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
+	<h1>Hello, I am your Web Search Assistant!</h1>
+	<i>Enter a question and I'll do the rest.</i>
+	<form on:submit|preventDefault={handleSubmit}>
+		<input class="question"
+			type="text"
+			placeholder="Ask your question here..."
+			bind:value={question}
+		/>
+		<button type="submit" class:processing={processing_question}>Query for answer</button>
+		<input class="token"
+		type="text"
+		placeholder="token"
+		bind:value={token}
+	/>
 
-		to your new<br />SvelteKit app
-	</h1>
+	</form>
 
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
+	
+	<div class="outputsection">
+		{#if processing_question}
+			<p>Reading news, thinking, answering. Please be patient. (Usually done in around 10 seconds)</p>
+		{:else}
+			<h2>Answer:</h2>
+			<p class="answertext">{answer}</p>
+		{/if}
+	</div>
 
-	<Counter />
+	<div class="outputsection">
+		<p>Considered pieces of information: (Doc Count: {vector.stats.docCount}, Split Count: {vector.stats.splitCount})</p>
+		{#each vector.docsConsidered as doc}
+			<a href={doc.url} target="_blank">{doc.url}</a>
+			<div class="docsnippet">{doc.contentSnippet}</div>
+		{/each}
+	</div>
+
+	<div class="outputsection">
+		<h2>Details:</h2>
+		<div class="responsedetails">{responsedetails}</div>
+	</div>
 </section>
 
 <style>
@@ -37,23 +112,81 @@
 		flex: 0.6;
 	}
 
+	form {
+		width: 75%;
+		margin-top: 10px;
+	}
+	.outputsection {
+		width: 75%;
+		min-height: 100px;
+		margin-top: 10px;
+		padding: 8px 12px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		box-sizing: border-box;
+		margin-bottom: 10px;
+		font-size: 14px;
+	}
+	.outputsection .answertext {
+		font-weight: bold;
+		padding-left: 10px;
+	}
+	.outputsection .docsnippet {
+		font-style: italic;
+		height: 100px;
+		overflow: scroll;
+	}
+	.outputsection .responsedetails {
+		font-style: italic;
+		height: 300px;
+		overflow: scroll;
+	}
+
+	input {
+		padding: 8px 12px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		box-sizing: border-box;
+		margin-bottom: 10px;
+		font-size: 16px;
+	}
+	input.question {
+		width: 100%;
+	}
+	input.token {
+		float: right;
+		width: 200px;
+	}
+
+	button {
+		width: 200px;
+		padding: 8px 12px;
+		background-color: rgb(134, 162, 217);
+		color: #333;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+	}
+
+	button:hover {
+		background-color: #4c7bd9;
+	}
+
+	button.processing {
+		cursor: wait;
+		animation: gradientBG 2s infinite alternate;
+	}
+	@keyframes gradientBG {
+		from {
+			background-color: #b1c7f1;
+		}
+		to {
+			background-color: #7a9bdb;
+		}
+	}
+
 	h1 {
 		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
 	}
 </style>

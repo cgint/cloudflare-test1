@@ -9,7 +9,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "deploy": "npm run build && wrangler pages deploy .svelte-kit/cloudflare",
-    "tail": "wrangler pages deployment tail",
+    "tail": "wrangler pages deployment tail --project-name cloudflare-test1",
     "build-cf-types": "wrangler types && mv worker-configuration.d.ts src/",
     "watch": "npm-watch",
     "svelte-check": "svelte-check",
@@ -38,6 +38,14 @@
     "openai": "^4.30.0"
   },
   "watch": {
+    "build": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "js,ts,svelte",
+      "runOnChangeOnly": true,
+      "quiet": false
+    },
     "test": {
       "patterns": [
         "src"
