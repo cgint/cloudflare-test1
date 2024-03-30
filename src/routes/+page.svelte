@@ -9,6 +9,12 @@
 		};
 	}
 	let question: string = "";
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		question = import.meta.env.VITE_DEMO_QUESTION;
+		token = import.meta.env.VITE_DEMO_TOKEN;
+	});
 	let processing_question: boolean = false;
 	let answer: string = ""; 
 	let vector: Vector = {result: "", docsConsidered: [], stats: {docCount: 0, splitCount: 0}}; 
@@ -72,7 +78,7 @@
 		/>
 		<button type="submit" class:processing={processing_question}>Query for answer</button>
 		<input class="token"
-		type="text"
+		type="password"
 		placeholder="token"
 		bind:value={token}
 	/>
