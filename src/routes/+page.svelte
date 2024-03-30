@@ -8,7 +8,7 @@
 			splitCount: number;
 		};
 	}
-	let question: string = "When was lewis hamilton born";
+	let question: string = "";
 	let processing_question: boolean = false;
 	let answer: string = ""; 
 	let vector: Vector = {result: "", docsConsidered: [], stats: {docCount: 0, splitCount: 0}}; 
