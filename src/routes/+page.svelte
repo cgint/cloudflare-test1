@@ -12,8 +12,8 @@
 	import { onMount } from 'svelte';
 
 	onMount(() => {
-		question = import.meta.env.VITE_DEMO_QUESTION;
-		token = import.meta.env.VITE_DEMO_TOKEN;
+		question = import.meta.env.VITE_DEMO_QUESTION || "";
+		token = import.meta.env.VITE_DEMO_TOKEN || "";
 	});
 	let processing_question: boolean = false;
 	let answer: string = ""; 
