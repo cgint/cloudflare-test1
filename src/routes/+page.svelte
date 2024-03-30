@@ -3,7 +3,7 @@
 	let token: string = "";
 	interface Vector {
 		result: string;
-		docsConsidered: {url: string, contentSnippet: string}[];
+		docsConsidered: {url: string, age_normalized: string, contentSnippet: string}[];
 		stats: {
 			docCount: number;
 			splitCount: number;
@@ -94,6 +94,7 @@
 		<div class="outputsection considered">
 			<p>Considered pieces of information: (Doc Count: {rag_result.stats.docCount}, Split Count: {rag_result.stats.splitCount})</p>
 			{#each rag_result.docsConsidered as doc}
+				<span class="agenormalized">({doc.age_normalized})</span>
 				<a href={doc.url} target="_blank">{doc.url}</a>
 				<div class="docsnippet">{doc.contentSnippet}</div>
 			{/each}
@@ -141,6 +142,11 @@
 	.outputsection .answertext {
 		font-weight: bold;
 		padding-left: 10px;
+	}
+	.outputsection .agenormalized {
+		font-size: 0.8em;
+		font-style: italic;
+		color: #666;
 	}
 	.outputsection .docsnippet {
 		font-style: italic;

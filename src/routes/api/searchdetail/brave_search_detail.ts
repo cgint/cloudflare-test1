@@ -34,7 +34,7 @@ export class BraveSearchDetailService {
     public toDocuments(pages: MyDetailSearchResult[]): Document[] {
         return pages.map((page) => new Document({
             pageContent: page.textContent,
-            metadata: { source: "webpage", url: page.url },
+            metadata: { source: "webpage", url: page.url, age_normalized: page.age_normalized },
         }));
     }
 }

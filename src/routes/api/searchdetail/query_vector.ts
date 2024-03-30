@@ -11,6 +11,7 @@ const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 interface ConsideredDoc {
     url: string;
+    age_normalized: string;
     contentSnippet: string;
 }
 
@@ -46,7 +47,11 @@ export class QueryVector {
 
         return {
             result: runOutput,
-            docsConsidered: retrievedDocs.map(doc => ({ url: doc.metadata.url, contentSnippet: doc.pageContent })),
+            docsConsidered: retrievedDocs.map(doc => ({
+                url: doc.metadata.url,
+                age_normalized: doc.metadata.age_normalized,
+                contentSnippet: doc.pageContent
+            })),
             stats: {
                 docCount: docs.length,
                 splitCount: splits.length
