@@ -40,7 +40,8 @@
   "watch": {
     "build": {
       "patterns": [
-        "src"
+        "src",
+        ".env"
       ],
       "extensions": "js,ts,svelte",
       "runOnChangeOnly": true,
