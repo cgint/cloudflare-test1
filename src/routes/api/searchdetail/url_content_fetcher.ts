@@ -38,7 +38,7 @@ export class UrlContentFetcher {
 
   private async downloadURLs(urls: string[], timeout: number): Promise<PromiseSettledResult<void | globalThis.Response>[]> {
     const chunkedUrls = this.chunkUrls(urls, DL_MAX_CONCURRENCY);
-    console.log(`got ${chunkedUrls.length} chunks for ${urls.length} urls`);
+    console.log(`Downloading ${urls.length} urls in ${chunkedUrls.length} blocks.`);
     let allResults: PromiseSettledResult<void | globalThis.Response>[] = [];
     for (const chunk of chunkedUrls) {
       const promises = chunk.map(url => fetchWithTimeout(url, HEADERS_FOR_FETCH, timeout));
