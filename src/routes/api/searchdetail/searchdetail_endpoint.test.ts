@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { BraveSearchService } from '../search/brave_search';
 import { BraveSearchDetailEndpoint } from './search_detail_endpoint';
-import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult } from './brave_search_detail';
+import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult, type SearchEngineResult } from './brave_search_detail';
 import { UrlContentFetcher } from './url_content_fetcher';
 import { QueryVector } from './query_vector';
 import type { QueryVectorResult, ConsideredDoc } from './query_vector';
@@ -32,6 +32,12 @@ const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{
   age_normalized: '10.06.2020',
   extra_snippets: []
 }];
+const successfulBraveSearchDetailResultsSearchEngineResult: SearchEngineResult[] = successfulBraveSearchDetailResults.map(result => ({
+  url: result.url,
+  title: result.title,
+  description: result.description,
+  age_normalized: result.age_normalized
+}));
 const docsForQuery: Document[] = successfulBraveSearchDetailResults.map(result => new Document({
   metadata: {
     source: "webpage", url: result.url, age_normalized: result.age_normalized
@@ -116,7 +122,7 @@ describe('Authentication in +server.ts', () => {
     expect(response.status).toBe(200);
     expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
     expect(spyQueryVector).toHaveBeenCalledWith(search_query, emptyResult);
-    expect(await response.json()).toEqual({ vector: queryVectorResult, plain: emptyResult  });
+    expect(await response.json()).toEqual({ answer: queryVectorResult, search: emptyResult });
   });
 
   it('should return the list of results according to the query', async () => {
@@ -132,7 +138,7 @@ describe('Authentication in +server.ts', () => {
     expect(response.status).toBe(200);
     expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
     expect(spyQueryVector).toHaveBeenCalledWith(search_query, docsForQuery);
-    expect(await response.json()).toEqual({ vector: queryVectorResult, plain: successfulBraveSearchDetailResults });
+    expect(await response.json()).toEqual({ answer: queryVectorResult, search: successfulBraveSearchDetailResultsSearchEngineResult });
   });
 
   it('should return a 400 status if the query parameter is missing', async () => {

@@ -12,6 +12,12 @@ export interface MyDetailSearchResult extends MySearchResult {
     textContent: string;
 }
 
+export interface SearchEngineResult {
+    url: string;
+    title: string;
+    description: string;
+    age_normalized: string;
+}
 
 export class BraveSearchDetailService {
     private braveSearchService: BraveSearchService;
@@ -35,6 +41,15 @@ export class BraveSearchDetailService {
         return pages.map((page) => new Document({
             pageContent: page.textContent,
             metadata: { source: "webpage", url: page.url, age_normalized: page.age_normalized },
+        }));
+    }
+
+    public toSearchEngineResult(pages: MySearchResult[]): SearchEngineResult[] {
+        return pages.map((page) => ({
+            url: page.url,
+            title: page.title,
+            description: page.description,
+            age_normalized: page.age_normalized
         }));
     }
 }

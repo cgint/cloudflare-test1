@@ -26,7 +26,8 @@ export class BraveSearchDetailEndpoint {
             const data = await this.braveSearchDetailService.fetchDetails(query, DL_DETAIL_FETCH_LIMIT, freshness);
             const docs = this.braveSearchDetailService.toDocuments(data);
             const result = await this.queryVector.query(query, docs);
-            return json({ vector: result, plain: data });
+            const searchdata = this.braveSearchDetailService.toSearchEngineResult(data);
+            return json({ answer: result, search: searchdata });
         } catch (err) {
             console.error("search error", err);
             return json({ error: this.exceptionToString(err) }, { status: 500 });

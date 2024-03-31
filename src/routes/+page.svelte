@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount } from "svelte";
 
 	let token: string = "";
-	interface Vector {
+	interface RagResult {
 		result: string;
 		docsConsidered: {
 			url: string;
@@ -13,6 +13,12 @@
 			docCount: number;
 			splitCount: number;
 		};
+	}
+	interface SearchEngineResult {
+		url: string;
+		title: string;
+		description: string;
+		age_normalized: string;
 	}
 	let RR_EMPTY = {
 		result: "",
@@ -29,8 +35,8 @@
 
 	let processing_question: boolean = false;
 	let answer: string = "";
-	let rag_result: Vector = RR_EMPTY;
-	let responsedetails: string = "";
+	let answer_result: RagResult = RR_EMPTY;
+	let search_engine_results: SearchEngineResult[] = [];
 
 	let speechSynthesisSupportedCheckDone = false;
 	let speechSynthesisSupported = false;
@@ -43,7 +49,7 @@
 		if (speechSynthesisSupported) {
 			window.setInterval(() => {
 				isSpeaking = window.speechSynthesis.speaking;
-			}, 1000);
+			}, 500);
 		}
 	});
 
@@ -72,8 +78,8 @@
 		}
 		console.log("processing question: " + question);
 		answer = "";
-		rag_result = RR_EMPTY;
-		responsedetails = "";
+		answer_result = RR_EMPTY;
+		search_engine_results = [];
 		processing_question = true;
 		const formattedQuestion = encodeURIComponent(question);
 		const url = `/api/searchdetail?query=${formattedQuestion}&freshness=${freshness}`;
@@ -86,10 +92,10 @@
 			})
 				.then(async (response) => {
 					if (response.status === 200) {
-						responsedetails = await response.text();
-						let details_obj = JSON.parse(responsedetails);
-						rag_result = details_obj.vector;
-						answer = rag_result.result;
+						let details_obj: any = await response.json();
+						answer_result = details_obj.answer;
+						answer = answer_result.result;
+						search_engine_results = details_obj.search;
 					} else {
 						const error_response: any = await response.text();
 						answer =
@@ -164,7 +170,7 @@
 
 		<div class="outputsection answer">
 			{#if processing_question}
-				<h2>Processing ...</h2>
+				<h2>Answer:</h2>
 				<p>
 					Reading news, thinking, answering. Please be patient.
 					(Usually done in around 10 seconds)
@@ -195,24 +201,38 @@
 		</div>
 
 		<div class="outputsection considered">
-			{#if !processing_question}
+			{#if !processing_question && answer !== ""}
 				<p>
-					Considered pieces of information: (Doc Count: {rag_result
-						.stats.docCount}, Split Count: {rag_result.stats
-						.splitCount})
-				</p>
-				{#each rag_result.docsConsidered as doc}
-					<span class="agenormalized">({doc.age_normalized})</span
+					<u
+						>For the answer the following {answer_result
+							.docsConsidered.length} web-page-pieces of information
+						were considered: (From {answer_result.stats.splitCount} overall)</u
 					>
-					<a href={doc.url} target="_blank">{doc.url}</a>
-					<div class="docsnippet">{doc.contentSnippet}</div>
+				</p>
+				{#each answer_result.docsConsidered as doc}
+					<div class="consideredcontent">
+						<span class="agenormalized">({doc.age_normalized})</span
+						>
+						<a href={doc.url} target="_blank">{doc.url}</a>
+						<div class="docsnippet">{@html doc.contentSnippet}</div>
+					</div>
+				{/each}
+				<p>
+					<u
+						>Initially {search_engine_results.length} web pages found
+						by search engine</u
+					>
+				</p>
+				{#each search_engine_results as result}
+					<div class="searchresult">
+						<span class="agenormalized"
+							>({result.age_normalized})</span
+						>
+						<a href={result.url} target="_blank">{result.title}</a>
+						<div class="docsnippet">{@html result.description}</div>
+					</div>
 				{/each}
 			{/if}
-		</div>
-
-		<div class="outputsection details">
-			<h2>Details:</h2>
-			<div class="responsedetails">{responsedetails}</div>
 		</div>
 	</div>
 </section>
@@ -272,18 +292,18 @@
 		font-style: italic;
 		color: #666;
 	}
-	.outputsection .docsnippet {
-		font-style: italic;
-		height: 100px;
-		overflow: scroll;
+	.outputsection.considered .consideredcontent,
+	.outputsection.considered .searchresult {
+		padding-left: 10px;
 	}
-	.outputsection.details {
-		display: none;
-	}
-	.outputsection .responsedetails {
+	.outputsection.considered .docsnippet,
+	.outputsection.considered .searchresult .docsnippet {
+		margin-top: 5px;
+		margin-bottom: 15px;
+		margin-left: 5px;
 		font-style: italic;
-		height: 300px;
-		overflow: scroll;
+		height: 50px;
+		overflow: auto;
 	}
 
 	input {
