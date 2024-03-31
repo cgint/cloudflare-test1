@@ -1,16 +1,24 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { writable } from 'svelte/store';
+
 	let token: string = "";
 	interface Vector {
 		result: string;
-		docsConsidered: {url: string, age_normalized: string, contentSnippet: string}[];
+		docsConsidered: {
+			url: string;
+			age_normalized: string;
+			contentSnippet: string;
+		}[];
 		stats: {
 			docCount: number;
 			splitCount: number;
 		};
 	}
-	let RR_EMPTY = {result: "", docsConsidered: [], stats: {docCount: 0, splitCount: 0}};
+	let RR_EMPTY = {
+		result: "",
+		docsConsidered: [],
+		stats: { docCount: 0, splitCount: 0 },
+	};
 	let question: string = "";
 
 	onMount(() => {
@@ -19,49 +27,38 @@
 	});
 
 	let processing_question: boolean = false;
-	let answer: string = ""; 
-	let rag_result: Vector = RR_EMPTY; 
-	let responsedetails: string = ""; 
+	let answer: string = "";
+	let rag_result: Vector = RR_EMPTY;
+	let responsedetails: string = "";
 
+	let speechSynthesisSupportedCheckDone = false;
 	let speechSynthesisSupported = false;
-	let speech = writable("");
 	let autoSpeak = false;
 	let isSpeaking = false;
 
 	onMount(() => {
-		speechSynthesisSupported = 'speechSynthesis' in window;
+		speechSynthesisSupported = "speechSynthesis" in window;
+		speechSynthesisSupportedCheckDone = true;
 		if (speechSynthesisSupported) {
-			speech.subscribe(($speech: any) => {
-				if ($speech !== "" && autoSpeak) {
-					speakText($speech);
-				}
-			});
+			window.setInterval(() => {
+				isSpeaking = window.speechSynthesis.speaking;
+			}, 1000);
 		}
 	});
 
-	function speakText(text: string) {
-		const utterance = new SpeechSynthesisUtterance(text);
-		window.speechSynthesis.speak(utterance);
-		isSpeaking = true;
-		startWatchSpeakingState();
+	// start watching of answer for autoSpeak-functionality
+	$: if (answer !== "" && speechSynthesisSupported && autoSpeak) {
+		startSpeakAnswer();
 	}
-	function startWatchSpeakingState() {
-		let speakingStateWatcher = window.setInterval(() => {
-			if (!window.speechSynthesis.speaking) {
-				isSpeaking = false;
-				window.clearInterval(speakingStateWatcher);
-			}
-		}, 1000);
-	}
+
 	function startSpeakAnswer() {
 		speakText(answer);
 	}
+	function speakText(text: string) {
+		window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+	}
 	function stopSpeakAnswer() {
 		window.speechSynthesis.cancel();
-	}
-
-	$: if (answer !== "" && speechSynthesisSupported) {
-		speech.set(answer);
 	}
 
 	async function searchForAnswer() {
@@ -83,23 +80,29 @@
 		try {
 			await fetch(url, {
 				headers: {
-					'password': token
-				}
-			}).then(async (response) => {
-				if (response.status === 200) {
-					responsedetails = await response.text();
-					let details_obj = JSON.parse(responsedetails);
-					rag_result = details_obj.vector;
-					answer = rag_result.result;
-				} else {
-					const error_response: any = await response.text();
-					answer = "Unable to search for answer due to '" + error_response + "'";
-				}
-			}).catch((error) => {
-				console.error("Error fetching search details:", error);
-			}).finally(() => {
-				processing_question = false;
-			});
+					password: token,
+				},
+			})
+				.then(async (response) => {
+					if (response.status === 200) {
+						responsedetails = await response.text();
+						let details_obj = JSON.parse(responsedetails);
+						rag_result = details_obj.vector;
+						answer = rag_result.result;
+					} else {
+						const error_response: any = await response.text();
+						answer =
+							"Unable to search for answer due to '" +
+							error_response +
+							"'";
+					}
+				})
+				.catch((error) => {
+					console.error("Error fetching search details:", error);
+				})
+				.finally(() => {
+					processing_question = false;
+				});
 		} catch (error) {
 			console.error("Error fetching search details:", error);
 		}
@@ -113,35 +116,67 @@
 
 <section>
 	<h1>Hello, I am your <nobr>Web Search Assistant!</nobr></h1>
-	<i>Enter a question and I'll do the rest.</i>
 	<div class="formanddata">
 		<form on:submit|preventDefault={searchForAnswer}>
-			<input class="question" type="text" bind:value={question}
-				placeholder="Ask your question here..."/>
-			<button class="activebutton" class:processing={processing_question} type="submit">{processing_question ? "Processing..." : "Query for answer"}</button>
-			<input class="token" type="password" bind:value={token} placeholder="***"/>
-			<input class="autospeak" type="checkbox" bind:checked={autoSpeak}/> 
+			<div class="formsettings">
+				<div class="token">
+					<input
+					class="token"
+					type="password"
+					bind:value={token}
+					placeholder="***"
+					/>
+				</div>
+				<div class="autospeak">
+					<input id="autospeak" type="checkbox" bind:checked={autoSpeak} />
+					<label for="autospeak">AutoSpeak</label>
+				</div>
+			</div>
+			<input
+				class="question"
+				type="text"
+				bind:value={question}
+				placeholder="Ask your question here..."
+			/>
+			<button
+				class="activebutton"
+				class:processing={processing_question}
+				type="submit"
+				>{processing_question
+					? "Processing..."
+					: "Query for answer"}</button
+			>
 		</form>
 
-		
 		<div class="outputsection answer">
 			{#if processing_question}
 				<h2>Processing ...</h2>
-				<p>Reading news, thinking, answering. Please be patient. (Usually done in around 10 seconds)</p>
+				<p>
+					Reading news, thinking, answering. Please be patient.
+					(Usually done in around 10 seconds)
+				</p>
 			{:else}
 				<div style="float: right;">
 					{#if speechSynthesisSupported}
-						{#if autoSpeak}
+						{#if isSpeaking}
+							<button
+								class="activebutton processing"
+								on:click={stopSpeakAnswer}>Stop speaking</button
+							>
+						{:else if autoSpeak}
 							<p>AutoSpeak is on</p>
 						{:else}
-							{#if !isSpeaking}
-								<button class="activebutton" on:click={startSpeakAnswer}>Speak answer</button>
-							{:else}
-								<button class="activebutton processing" on:click={stopSpeakAnswer}>Stop speaking</button>
+							{#if answer !== ""}
+							<button
+								class="activebutton"
+								on:click={startSpeakAnswer}>Speak answer</button
+							>
 							{/if}
 						{/if}
 					{:else}
-						<p>Speech not supported by browser</p>
+						{#if speechSynthesisSupportedCheckDone}
+							<p>Speech not supported by browser</p>
+						{/if}
 					{/if}
 				</div>
 				<h2>Answer:</h2>
@@ -150,7 +185,10 @@
 		</div>
 
 		<div class="outputsection considered">
-			<p>Considered pieces of information: (Doc Count: {rag_result.stats.docCount}, Split Count: {rag_result.stats.splitCount})</p>
+			<p>
+				Considered pieces of information: (Doc Count: {rag_result.stats
+					.docCount}, Split Count: {rag_result.stats.splitCount})
+			</p>
 			{#each rag_result.docsConsidered as doc}
 				<span class="agenormalized">({doc.age_normalized})</span>
 				<a href={doc.url} target="_blank">{doc.url}</a>
@@ -171,7 +209,7 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		flex: 0.6;
+		/* flex: 0.6; */
 	}
 	div.formanddata {
 		width: 100%;
@@ -185,6 +223,16 @@
 	form {
 		width: 100%;
 		margin-top: 10px;
+	}
+	div.formsettings div.autospeak {
+		float: right;
+		margin-right: 10px;
+	}
+	div.formsettings div.token {
+		float: right;
+	}
+	input.token {
+		width: 80px;
 	}
 	.outputsection {
 		width: 100%;
@@ -230,13 +278,6 @@
 	}
 	input.question {
 		width: 100%;
-	}
-	input.autospeak {
-		float: right;
-	}
-	input.token {
-		float: right;
-		width: 80px;
 	}
 
 	button.activebutton {
