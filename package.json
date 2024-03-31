@@ -38,6 +38,14 @@
     "openai": "^4.30.0"
   },
   "watch": {
+    "check": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "js,ts,svelte",
+      "runOnChangeOnly": true,
+      "quiet": false
+    },
     "build": {
       "patterns": [
         "src",
