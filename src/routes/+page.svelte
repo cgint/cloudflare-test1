@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { writable } from 'svelte/store';
 	let token: string = "";
 	interface Vector {
 		result: string;
@@ -16,10 +17,52 @@
 		question = import.meta.env.VITE_DEMO_QUESTION || "";
 		token = import.meta.env.VITE_DEMO_TOKEN || "";
 	});
+
 	let processing_question: boolean = false;
 	let answer: string = ""; 
 	let rag_result: Vector = RR_EMPTY; 
 	let responsedetails: string = ""; 
+
+	let speechSynthesisSupported = false;
+	let speech = writable("");
+	let autoSpeak = false;
+	let isSpeaking = false;
+
+	onMount(() => {
+		speechSynthesisSupported = 'speechSynthesis' in window;
+		if (speechSynthesisSupported) {
+			speech.subscribe(($speech: any) => {
+				if ($speech !== "" && autoSpeak) {
+					speakText($speech);
+				}
+			});
+		}
+	});
+
+	function speakText(text: string) {
+		const utterance = new SpeechSynthesisUtterance(text);
+		window.speechSynthesis.speak(utterance);
+		isSpeaking = true;
+		startWatchSpeakingState();
+	}
+	function startWatchSpeakingState() {
+		let speakingStateWatcher = window.setInterval(() => {
+			if (!window.speechSynthesis.speaking) {
+				isSpeaking = false;
+				window.clearInterval(speakingStateWatcher);
+			}
+		}, 1000);
+	}
+	function startSpeakAnswer() {
+		speakText(answer);
+	}
+	function stopSpeakAnswer() {
+		window.speechSynthesis.cancel();
+	}
+
+	$: if (answer !== "" && speechSynthesisSupported) {
+		speech.set(answer);
+	}
 
 	async function searchForAnswer() {
 		if (question.trim() === "") {
@@ -75,9 +118,9 @@
 		<form on:submit|preventDefault={searchForAnswer}>
 			<input class="question" type="text" bind:value={question}
 				placeholder="Ask your question here..."/>
-			<button type="submit" class:processing={processing_question}>{processing_question ? "Processing..." : "Query for answer"}</button>
-			<input class="token" type="password" bind:value={token}
-				placeholder="token"/>
+			<button class="activebutton" class:processing={processing_question} type="submit">{processing_question ? "Processing..." : "Query for answer"}</button>
+			<input class="token" type="password" bind:value={token} placeholder="***"/>
+			<input class="autospeak" type="checkbox" bind:checked={autoSpeak}/> 
 		</form>
 
 		
@@ -86,6 +129,21 @@
 				<h2>Processing ...</h2>
 				<p>Reading news, thinking, answering. Please be patient. (Usually done in around 10 seconds)</p>
 			{:else}
+				<div style="float: right;">
+					{#if speechSynthesisSupported}
+						{#if autoSpeak}
+							<p>AutoSpeak is on</p>
+						{:else}
+							{#if !isSpeaking}
+								<button class="activebutton" on:click={startSpeakAnswer}>Speak answer</button>
+							{:else}
+								<button class="activebutton processing" on:click={stopSpeakAnswer}>Stop speaking</button>
+							{/if}
+						{/if}
+					{:else}
+						<p>Speech not supported by browser</p>
+					{/if}
+				</div>
 				<h2>Answer:</h2>
 				<p class="answertext">{answer}</p>
 			{/if}
@@ -173,12 +231,15 @@
 	input.question {
 		width: 100%;
 	}
+	input.autospeak {
+		float: right;
+	}
 	input.token {
 		float: right;
 		width: 80px;
 	}
 
-	button {
+	button.activebutton {
 		width: 180px;
 		white-space: nowrap;
 		padding: 8px 12px;
@@ -190,11 +251,11 @@
 		transition: background-color 0.3s ease;
 	}
 
-	button:hover {
+	button.activebutton:hover {
 		background-color: #4c7bd9;
 	}
 
-	button.processing {
+	button.activebutton.processing {
 		cursor: wait;
 		animation: gradientBG 1s infinite alternate;
 	}
