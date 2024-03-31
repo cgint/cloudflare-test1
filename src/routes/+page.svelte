@@ -20,6 +20,7 @@
 		stats: { docCount: 0, splitCount: 0 },
 	};
 	let question: string = "";
+	let freshness: string = "";
 
 	onMount(() => {
 		question = import.meta.env.VITE_DEMO_QUESTION || "";
@@ -75,7 +76,7 @@
 		responsedetails = "";
 		processing_question = true;
 		const formattedQuestion = encodeURIComponent(question);
-		const url = `/api/searchdetail?query=${formattedQuestion}`;
+		const url = `/api/searchdetail?query=${formattedQuestion}&freshness=${freshness}`;
 
 		try {
 			await fetch(url, {
@@ -130,6 +131,15 @@
 				<div class="autospeak">
 					<input id="autospeak" type="checkbox" bind:checked={autoSpeak} />
 					<label for="autospeak">AutoSpeak</label>
+				</div>
+				<div class="freshness">
+					<select bind:value={freshness}>
+						<option value="pd">Past Day</option>
+						<option value="pw">Past Week</option>
+						<option value="pm">Past Month</option>
+						<option value="py">Past Year</option>
+						<option value="">All Time</option>
+					</select>
 				</div>
 			</div>
 			<input
@@ -230,6 +240,10 @@
 	}
 	div.formsettings div.token {
 		float: right;
+	}
+	div.formsettings div.freshness {
+		float: left;
+		margin-left: 10px;
 	}
 	input.token {
 		width: 80px;

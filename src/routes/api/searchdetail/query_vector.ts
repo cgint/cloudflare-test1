@@ -9,13 +9,13 @@ import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
-interface ConsideredDoc {
+export interface ConsideredDoc {
     url: string;
     age_normalized: string;
     contentSnippet: string;
 }
 
-interface QueryVectorResult {
+export interface QueryVectorResult {
     result: string;
     docsConsidered: ConsideredDoc[];
     stats: {

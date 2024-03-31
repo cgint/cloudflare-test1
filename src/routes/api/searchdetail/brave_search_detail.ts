@@ -2,7 +2,7 @@ import type { BraveSearchService, BraveWebSearchResult, MySearchResult } from '.
 import { UrlContentFetcher, type FetchURLResult } from './url_content_fetcher';
 import { Document } from "@langchain/core/documents";
 
-const DL_DETAIL_FETCH_LIMIT = parseInt(import.meta.env.VITE_DL_DETAIL_FETCH_LIMIT || '10');
+export const DL_DETAIL_FETCH_LIMIT = parseInt(import.meta.env.VITE_DL_DETAIL_FETCH_LIMIT || '10');
 
 export interface BraveWebSearchDetailResult extends BraveWebSearchResult {
     textContent: string;
@@ -22,8 +22,8 @@ export class BraveSearchDetailService {
         this.urlContentFetcher = urlContentFetcher;
     }
 
-    public async fetchDetails(query: string, limit: number = DL_DETAIL_FETCH_LIMIT): Promise<MyDetailSearchResult[]> {
-        const results: MySearchResult[] = await this.braveSearchService.fetchBraveWebSearchMyResults(query);
+    public async fetchDetails(query: string, limit: number = DL_DETAIL_FETCH_LIMIT, freshness: string = ''): Promise<MyDetailSearchResult[]> {
+        const results: MySearchResult[] = await this.braveSearchService.fetchBraveWebSearchMyResults(query, freshness);
         const limitedResults = results.slice(0, limit);
         console.log("about to fetch details for ", limitedResults.length, " urls from ", results.length, " results");
         const limitedResultUrls = limitedResults.map(result => result.url);

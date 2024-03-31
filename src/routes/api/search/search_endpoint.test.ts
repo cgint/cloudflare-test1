@@ -85,7 +85,8 @@ const successfulBraveSearchWithResults = {
         results: successfulBraveSearchResults,
     }
 }
-
+/*
+We should move this as we moved the logic to 
 const successfulBraveSearchResultsMyResultsOrderedByAgeNormAsc: MySearchResult[] = [
   {
     title: 'Test Title 2',
@@ -122,7 +123,7 @@ const successfulBraveSearchResultsMyResultsOrderedByAgeNormAsc: MySearchResult[]
     subtype: 'web'
   }
 ];
-
+*/
 const braveSearchService = new BraveSearchService();
 const searchEndpoint = new BraveSearchEndpoint(braveSearchService);
 function createSpyOnFetchBraveWebSearchResults(whatToReturn: BraveWebSearchResponse) {
@@ -141,8 +142,8 @@ describe('Authentication in +server.ts', () => {
     });
     const response = await searchEndpoint.search(url, request);
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual([]);
-    expect(spy).toHaveBeenCalledWith(search_query);
+    expect(spy).toHaveBeenCalledWith(search_query, '');
+    expect(await response.json()).toEqual(successfulBraveSearchNoResults);
   });
 
   it('should return the list of results according to the query', async () => {
@@ -155,8 +156,8 @@ describe('Authentication in +server.ts', () => {
     });
     const response = await searchEndpoint.search(url, request);
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual(successfulBraveSearchResultsMyResultsOrderedByAgeNormAsc);
-    expect(spy).toHaveBeenCalledWith(search_query);
+    expect(spy).toHaveBeenCalledWith(search_query, '');
+    expect(await response.json()).toEqual(successfulBraveSearchWithResults);
   });
 
   it('should return a 400 status if the query parameter is missing', async () => {
@@ -167,8 +168,8 @@ describe('Authentication in +server.ts', () => {
       headers: { 'password': 'test' },
     });
     const response = await searchEndpoint.search(url, request);
-    expect(response.status).toBe(400);
     expect(spy).not.toHaveBeenCalled();
+    expect(response.status).toBe(400);
   });
 
   it('should reject a request with an invalid password with a 401 status', async () => {
@@ -179,8 +180,8 @@ describe('Authentication in +server.ts', () => {
       headers: { 'password': 'invalidToken123' },
     });
     const response = await searchEndpoint.search(url, request);
-    expect(response.status).toBe(401);
     expect(spy).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
   });
   
   it('should reject a request without a password with a 401 status', async () => {
@@ -189,7 +190,7 @@ describe('Authentication in +server.ts', () => {
     const url = new URL(request_url);
     const request = new Request(request_url);
     const response = await searchEndpoint.search(url, request);
-    expect(response.status).toBe(401);
     expect(spy).not.toHaveBeenCalled();
+    expect(response.status).toBe(401);
   });
 });

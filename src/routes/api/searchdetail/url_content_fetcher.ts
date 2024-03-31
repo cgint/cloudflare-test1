@@ -2,7 +2,10 @@ import { fetchWithTimeout } from "./fetch_timeout";
 import { HtmlParser as HtmlParser } from "./html_parser";
 
 const DL_MAX_CONCURRENCY = parseInt(import.meta.env.VITE_DL_MAX_CONCURRENCY || '5');
-
+const HEADERS_FOR_FETCH = {
+  "User-Agent": "private playground script to help devs understand resources better",
+  "Accept": "*/*",
+}
 export interface FetchURLResult {
   url: string;
   value: string;
@@ -38,7 +41,7 @@ export class UrlContentFetcher {
     console.log(`got ${chunkedUrls.length} chunks for ${urls.length} urls`);
     let allResults: PromiseSettledResult<void | globalThis.Response>[] = [];
     for (const chunk of chunkedUrls) {
-      const promises = chunk.map(url => fetchWithTimeout(url, timeout));
+      const promises = chunk.map(url => fetchWithTimeout(url, HEADERS_FOR_FETCH, timeout));
       const results = await Promise.allSettled(promises);
       allResults = [...allResults, ...results];
     }

@@ -11,7 +11,7 @@ export class BraveSearchEndpoint {
         this.braveSearchService = braveSearchService;
     }
 
-    public async search(url: URL, request: Request): Promise<Response> {
+    public async search(url: URL, request: Request, freshness: string = ""): Promise<Response> {
         if (!this.checkBearerToken(url, request)) {
             return json({ error: 'Invalid token' }, { status: 401 });
         }
@@ -21,7 +21,7 @@ export class BraveSearchEndpoint {
         }
     
         try {
-            const data = await this.braveSearchService.fetchBraveWebSearchMyResults(query);
+            const data = await this.braveSearchService.fetchBraveWebSearchResults(query, freshness);
             return json(data);
         } catch (err) {
             console.error(err);

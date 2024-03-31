@@ -75,8 +75,10 @@ export interface MySearchResult extends AgeNormalisedResult {
 }
 
 export class BraveSearchService {
-    private async fetchFromBraveAPI(endpoint: string, parameter: string, value: string): Promise<Response> {
-        const url = `${endpoint}?${parameter}=${encodeURIComponent(value)}${DEFAULT_SEARCH_PARAMS}`;
+    private async fetchFromBraveAPI(endpoint: string, parameter: string, value: string, freshness: string = ''): Promise<Response> {
+        const freshnessParam = freshness ? `&freshness=${freshness}` : '';
+        const url = `${endpoint}?${parameter}=${encodeURIComponent(value)}${DEFAULT_SEARCH_PARAMS}${freshnessParam}`;
+        console.log(`about to search using url: ${url}`);
         const response: Response = await fetch(url, { headers: DEFAULT_REQUEST_OPTIONS });
 
         if (!response.ok) {
@@ -86,14 +88,14 @@ export class BraveSearchService {
         return response;
     }
 
-    public async fetchBraveWebSearchResults(query: string): Promise<BraveWebSearchResponse> {
-        const response = await this.fetchFromBraveAPI(BRAVE_WEB_SEARCH_API_ENDPOINT, 'q', query);
+    public async fetchBraveWebSearchResults(query: string, freshness: string = ''): Promise<BraveWebSearchResponse> {
+        const response = await this.fetchFromBraveAPI(BRAVE_WEB_SEARCH_API_ENDPOINT, 'q', query, freshness);
         return response.json();
     }
 
     // TODO this is only tested via endpoint as the logic moved here
-    public async fetchBraveWebSearchMyResults(query: string): Promise<MySearchResult[]> {
-        const r = await this.fetchBraveWebSearchResults(query);
+    public async fetchBraveWebSearchMyResults(query: string, freshness: string = ''): Promise<MySearchResult[]> {
+        const r = await this.fetchBraveWebSearchResults(query, freshness);
         const simplifiedResults: MySearchResult[] = r.web.results.map(this.toMySearchResult);
         return sortedByAgeNormalisedAsc(simplifiedResults);
     }
