@@ -122,14 +122,18 @@
 			<div class="formsettings">
 				<div class="token">
 					<input
-					class="token"
-					type="password"
-					bind:value={token}
-					placeholder="***"
+						class="token"
+						type="password"
+						bind:value={token}
+						placeholder="***"
 					/>
 				</div>
 				<div class="autospeak">
-					<input id="autospeak" type="checkbox" bind:checked={autoSpeak} />
+					<input
+						id="autospeak"
+						type="checkbox"
+						bind:checked={autoSpeak}
+					/>
 					<label for="autospeak">AutoSpeak</label>
 				</div>
 				<div class="freshness">
@@ -175,18 +179,14 @@
 							>
 						{:else if autoSpeak}
 							<p>AutoSpeak is on</p>
-						{:else}
-							{#if answer !== ""}
+						{:else if answer !== ""}
 							<button
 								class="activebutton"
 								on:click={startSpeakAnswer}>Speak answer</button
 							>
-							{/if}
 						{/if}
-					{:else}
-						{#if speechSynthesisSupportedCheckDone}
-							<p>Speech not supported by browser</p>
-						{/if}
+					{:else if speechSynthesisSupportedCheckDone}
+						<p>Speech not supported by browser</p>
 					{/if}
 				</div>
 				<h2>Answer:</h2>
@@ -195,15 +195,19 @@
 		</div>
 
 		<div class="outputsection considered">
-			<p>
-				Considered pieces of information: (Doc Count: {rag_result.stats
-					.docCount}, Split Count: {rag_result.stats.splitCount})
-			</p>
-			{#each rag_result.docsConsidered as doc}
-				<span class="agenormalized">({doc.age_normalized})</span>
-				<a href={doc.url} target="_blank">{doc.url}</a>
-				<div class="docsnippet">{doc.contentSnippet}</div>
-			{/each}
+			{#if !processing_question}
+				<p>
+					Considered pieces of information: (Doc Count: {rag_result
+						.stats.docCount}, Split Count: {rag_result.stats
+						.splitCount})
+				</p>
+				{#each rag_result.docsConsidered as doc}
+					<span class="agenormalized">({doc.age_normalized})</span
+					>
+					<a href={doc.url} target="_blank">{doc.url}</a>
+					<div class="docsnippet">{doc.contentSnippet}</div>
+				{/each}
+			{/if}
 		</div>
 
 		<div class="outputsection details">

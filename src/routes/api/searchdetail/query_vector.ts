@@ -29,16 +29,25 @@ export class QueryVector {
         chunkSize: 2000,
         chunkOverlap: 400
     });
-    async query(query: string, docs: Document[]): Promise<QueryVectorResult> {
+    async query(question: string, docs: Document[]): Promise<QueryVectorResult> {
+        if (docs.length === 0) {
+            return {
+                result: "Got no documents as input so I can not answer your question!",
+                docsConsidered: [],
+                stats: {
+                    docCount: 0, splitCount: 0
+                }
+            };
+        }
         const query_full_start_time = performance.now();
         const splits = await this.textSplitter.splitDocuments(docs);
         const vectorStore = await this.splitAndBuildVectorStoreFrom(docs, splits);
-        const retrievedDocs = await this.retrieveDocuments(vectorStore, query);
+        const retrievedDocs = await this.retrieveDocuments(vectorStore, question);
         const ragChain = await this.buildRAGChain();
 
         const rag_start_time = performance.now();
         const runOutput = await ragChain.invoke({
-            question: query,
+            question: question,
             context: retrievedDocs,
         });
         const rag_end_time = performance.now();
