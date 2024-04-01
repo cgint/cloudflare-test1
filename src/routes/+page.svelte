@@ -196,7 +196,7 @@
 					{/if}
 				</div>
 				<h2>Answer:</h2>
-				<p class="answertext">{answer}</p>
+				<p class="answertext">{@html answer}</p>
 			{/if}
 		</div>
 
