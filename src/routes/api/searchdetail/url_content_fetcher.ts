@@ -42,6 +42,7 @@ export class UrlContentFetcher {
     let allResults: PromiseSettledResult<void | globalThis.Response>[] = [];
     for (const chunk of chunkedUrls) {
       const promises = chunk.map(url => fetchWithTimeout(url, HEADERS_FOR_FETCH, timeout));
+      console.log(`waiting for ${promises.length} promises`);
       const results = await Promise.allSettled(promises);
       allResults = [...allResults, ...results];
     }
