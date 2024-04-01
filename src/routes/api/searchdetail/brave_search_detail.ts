@@ -36,21 +36,5 @@ export class BraveSearchDetailService {
         const textContents: FetchURLResult[] = await this.urlContentFetcher.fetchURLs(limitedResultUrls);
         return limitedResults.map((result, index) => ({ ...result, textContent: textContents[index].value }));
     }
-
-    public toDocuments(pages: MyDetailSearchResult[]): Document[] {
-        return pages.map((page) => new Document({
-            pageContent: page.textContent,
-            metadata: { source: "webpage", url: page.url, age_normalized: page.age_normalized },
-        }));
-    }
-
-    public toSearchEngineResult(pages: MySearchResult[]): SearchEngineResult[] {
-        return pages.map((page) => ({
-            url: page.url,
-            title: page.title,
-            description: page.description,
-            age_normalized: page.age_normalized
-        }));
-    }
 }
 

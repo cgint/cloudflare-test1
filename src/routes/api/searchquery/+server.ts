@@ -1,11 +1,8 @@
-import { BraveSearchService } from '../search/brave_search';
-import { BraveSearchDetailService, type MyDetailSearchResult } from '../searchdetail/brave_search_detail';
-import { UrlContentFetcher } from '../searchdetail/url_content_fetcher';
+import type { MyDetailSearchResult } from '../searchdetail/brave_search_detail';
 import { QueryVector } from './query_vector';
 import { SearchQueryEndpoint } from './search_query_endpoint';
 
-const bsds = new BraveSearchDetailService(new BraveSearchService(), new UrlContentFetcher());
-const searchQueryEndpoint = new SearchQueryEndpoint(bsds, new QueryVector());
+const searchQueryEndpoint = new SearchQueryEndpoint(new QueryVector());
 
 export const POST = async ({ url, request }) => {
     try {

@@ -8,6 +8,8 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { TogetherAIEmbeddings } from "@langchain/community/embeddings/togetherai";
 import { TogetherAI } from "@langchain/community/llms/togetherai";
+import type { MySearchResult } from "../search/brave_search";
+import type { MyDetailSearchResult, SearchEngineResult } from "../searchdetail/brave_search_detail";
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const TOGETHER_AI_API_KEY = import.meta.env.VITE_TOGETHER_AI_API_KEY;
@@ -138,6 +140,22 @@ export class QueryVector {
             outputParser: new StringOutputParser(),
         });
         return ragChain;
+    }
+
+    public toDocuments(pages: MyDetailSearchResult[]): Document[] {
+        return pages.map((page) => new Document({
+            pageContent: page.textContent,
+            metadata: { source: "webpage", url: page.url, age_normalized: page.age_normalized },
+        }));
+    }
+
+    public toSearchEngineResult(pages: MySearchResult[]): SearchEngineResult[] {
+        return pages.map((page) => ({
+            url: page.url,
+            title: page.title,
+            description: page.description,
+            age_normalized: page.age_normalized
+        }));
     }
 
 }

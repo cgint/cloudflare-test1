@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { BraveSearchService } from '../search/brave_search';
-import { BraveSearchDetailEndpoint } from './search_detail_endpoint';
-import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult, type SearchEngineResult } from './brave_search_detail';
-import { UrlContentFetcher } from './url_content_fetcher';
 import { QueryVector } from './query_vector';
 import type { QueryVectorResult, ConsideredDoc } from './query_vector';
 import { Document } from "@langchain/core/documents";
+import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult, type SearchEngineResult } from '../searchdetail/brave_search_detail';
+import { BraveSearchDetailEndpoint } from '../searchdetail/search_detail_endpoint';
+import { UrlContentFetcher } from '../searchdetail/url_content_fetcher';
+import { SearchQueryEndpoint } from './search_query_endpoint';
 
 const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{
   url: 'https://example1.com',
@@ -95,14 +96,8 @@ const successfulBraveSearchResultsMyResultsOrderedByAgeNormAsc: MySearchResult[]
   }
 ];
 */
-const braveSearchService = new BraveSearchService();
-const braveSearchDetailService = new BraveSearchDetailService(braveSearchService, new UrlContentFetcher());
 const queryVector = new QueryVector();
-const searchDetailEndpoint = new BraveSearchDetailEndpoint(braveSearchDetailService, queryVector);
-function createSpyOnFetchBraveWebSearchDetailFetchDetail(whatToReturn: MyDetailSearchResult[]) {
-  return vi.spyOn(braveSearchDetailService, 'fetchDetails')
-              .mockImplementation(() => Promise.resolve(whatToReturn));
-}
+const searchQueryEndpoint = new SearchQueryEndpoint(queryVector);
 function createSpyOnQueryVector(whatToReturn: QueryVectorResult) {
   return vi.spyOn(queryVector, 'query')
               .mockImplementation(() => Promise.resolve(whatToReturn));
@@ -110,73 +105,63 @@ function createSpyOnQueryVector(whatToReturn: QueryVectorResult) {
 describe('Authentication in +server.ts', () => {
   it('should authenticate a request with a valid password', async () => {
     const emptyResult: any = [];
-    const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(emptyResult);
     const spyQueryVector = createSpyOnQueryVector(queryVectorResult);
     const search_query: string = 'Tell me more';
-    const request_url: string = 'http://localhost/api/search?query='+encodeURIComponent(search_query);
+    const request_url: string = 'http://localhost/api/searchquery?query='+encodeURIComponent(search_query);
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'test' },
     });
-    const response = await searchDetailEndpoint.search(url, request);
+    const response = await searchQueryEndpoint.search(url, request, emptyResult);
     expect(response.status).toBe(200);
-    expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
     expect(spyQueryVector).toHaveBeenCalledWith(search_query, emptyResult);
-    expect(await response.json()).toEqual({ answer: queryVectorResult, search: emptyResult });
+    expect(await response.json()).toEqual({ answer: queryVectorResult, searchdata: emptyResult });
   });
 
   it('should return the list of results according to the query', async () => {
-    const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyQueryVector = createSpyOnQueryVector(queryVectorResult);
     const search_query: string = 'Tell me more';
-    const request_url: string = 'http://localhost/api/search?query='+encodeURIComponent(search_query);
+    const request_url: string = 'http://localhost/api/searchquery?query='+encodeURIComponent(search_query);
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'test' },
     });
-    const response = await searchDetailEndpoint.search(url, request);
+    const response = await searchQueryEndpoint.search(url, request, successfulBraveSearchDetailResults);
     expect(response.status).toBe(200);
-    expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
     expect(spyQueryVector).toHaveBeenCalledWith(search_query, docsForQuery);
-    expect(await response.json()).toEqual({ answer: queryVectorResult, search: successfulBraveSearchDetailResultsSearchEngineResult });
+    expect(await response.json()).toEqual({ answer: queryVectorResult, searchdata: successfulBraveSearchDetailResultsSearchEngineResult });
   });
 
   it('should return a 400 status if the query parameter is missing', async () => {
-    const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyQueryVector = createSpyOnQueryVector(queryVectorResult);
-    const request_url: string = 'http://localhost/api/search';
+    const request_url: string = 'http://localhost/api/searchquery';
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'test' },
     });
-    const response = await searchDetailEndpoint.search(url, request);
-    expect(spyFetch).not.toHaveBeenCalled();
+    const response = await searchQueryEndpoint.search(url, request, successfulBraveSearchDetailResults);
     expect(spyQueryVector).not.toHaveBeenCalled();
     expect(response.status).toBe(400);
   });
 
   it('should reject a request with an invalid password with a 401 status', async () => {
-    const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyQueryVector = createSpyOnQueryVector(queryVectorResult);
-    const request_url = 'http://localhost/api/search';
+    const request_url = 'http://localhost/api/searchquery';
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'invalidToken123' },
     });
-    const response = await searchDetailEndpoint.search(url, request);
-    expect(spyFetch).not.toHaveBeenCalled();
+    const response = await searchQueryEndpoint.search(url, request, successfulBraveSearchDetailResults);
     expect(spyQueryVector).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });
   
   it('should reject a request without a password with a 401 status', async () => {
-    const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyQueryVector = createSpyOnQueryVector(queryVectorResult);
-    const request_url = 'http://localhost/api/search';
+    const request_url = 'http://localhost/api/searchquery';
     const url = new URL(request_url);
     const request = new Request(request_url);
-    const response = await searchDetailEndpoint.search(url, request);
-    expect(spyFetch).not.toHaveBeenCalled();
+    const response = await searchQueryEndpoint.search(url, request, successfulBraveSearchDetailResults);
     expect(spyQueryVector).not.toHaveBeenCalled();
     expect(response.status).toBe(401);
   });

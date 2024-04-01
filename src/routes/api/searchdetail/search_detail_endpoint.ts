@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { BraveSearchDetailService } from './brave_search_detail';
 import { DL_DETAIL_FETCH_LIMIT } from './brave_search_detail';
-import { QueryVector } from '../searchquery/query_vector';
 import type { OtherEndpointInvoker } from './other_endpoint_invoker';
+import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
 
 const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
 
@@ -27,13 +27,8 @@ export class BraveSearchDetailEndpoint {
             const data = await this.braveSearchDetailService.fetchDetails(query, DL_DETAIL_FETCH_LIMIT, freshness);
             const server_address = url.protocol + '//' + url.hostname + (url.port ? ':' + url.port : '');
             const searchquery_url = `${server_address}/api/searchquery?query=${encodeURIComponent(query)}`;
-            const response: Response = await this.otherEndpointInvoker.invoke(searchquery_url, this.fetchBearerToken(request, url), data);
-            console.log(`response from subrequest to 'searchquery': ${response.status}`);
-            if (response.status != 200) {
-                return json({ error: 'Failed to fetch search results' }, { status: response.status });
-            }
-            const result_and_searchdata: any = await response.json();
-            return json({ answer: result_and_searchdata.answer, searchdata: result_and_searchdata.searchdata });
+            const response: AnswerAndSearchData = await this.otherEndpointInvoker.invoke(searchquery_url, this.fetchBearerToken(request, url), data);
+            return json({ answer: response.answer, searchdata: response.searchdata });
         } catch (err) {
             console.error("search error", err);
             return json({ error: this.exceptionToString(err) }, { status: 500 });

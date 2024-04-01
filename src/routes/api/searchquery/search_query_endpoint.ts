@@ -1,15 +1,18 @@
 import { json } from '@sveltejs/kit';
-import { QueryVector } from './query_vector';
-import type { BraveSearchDetailService, MyDetailSearchResult } from '../searchdetail/brave_search_detail';
+import { QueryVector, type QueryVectorResult } from './query_vector';
+import type { BraveSearchDetailService, MyDetailSearchResult, SearchEngineResult } from '../searchdetail/brave_search_detail';
 
 const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
 
+export interface AnswerAndSearchData {
+    answer: QueryVectorResult
+    searchdata: SearchEngineResult[]
+}
+
 export class SearchQueryEndpoint {
-    private braveSearchDetailService: BraveSearchDetailService;
     private queryVector: QueryVector;
 
-    constructor(braveSearchDetailService: BraveSearchDetailService, queryVector: QueryVector) {
-        this.braveSearchDetailService = braveSearchDetailService;
+    constructor(queryVector: QueryVector) {
         this.queryVector = queryVector;
     }
 
@@ -22,10 +25,11 @@ export class SearchQueryEndpoint {
             return json({ error: 'Query parameter is required' }, { status: 400 });
         }
         try {
-            const docs = this.braveSearchDetailService.toDocuments(data);
+            const docs = this.queryVector.toDocuments(data);
             const result = await this.queryVector.query(query, docs);
-            const searchdata = this.braveSearchDetailService.toSearchEngineResult(data);
-            return json({ answer: result, searchdata: searchdata });
+            const searchdata = this.queryVector.toSearchEngineResult(data);
+            const answerAndSearchData: AnswerAndSearchData = { answer: result, searchdata: searchdata };
+            return json(answerAndSearchData);
         } catch (err) {
             console.error("search error", err);
             return json({ error: this.exceptionToString(err) }, { status: 500 });
