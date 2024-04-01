@@ -95,7 +95,7 @@
 						let details_obj: any = await response.json();
 						answer_result = details_obj.answer;
 						answer = answer_result.result;
-						search_engine_results = details_obj.search;
+						search_engine_results = details_obj.searchdata;
 					} else {
 						const error_response: any = await response.text();
 						answer =
