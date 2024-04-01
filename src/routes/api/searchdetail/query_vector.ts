@@ -118,7 +118,7 @@ export class QueryVector {
     }
 
     private async retrieveDocuments(vectorStore: MemoryVectorStore, query: string) {
-        const retriever = vectorStore.asRetriever();
+        const retriever = vectorStore.asRetriever(11);
         const retrievedDocs = await retriever.getRelevantDocuments(query);
         console.log("retrievedDocs count ", retrievedDocs.length);
         retrievedDocs.forEach(doc => {
