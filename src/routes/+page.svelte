@@ -211,7 +211,7 @@
 				</p>
 				{#each answer_result.docsConsidered as doc}
 					<div class="consideredcontent">
-						<span class="agenormalized">({doc.age_normalized || 'not provided'})</span
+						<span class="agenormalized">({doc.age_normalized || 'no date provided'})</span
 						>
 						<a href={doc.url} target="_blank">{doc.url}</a>
 						<div class="docsnippet">{@html doc.contentSnippet}</div>
