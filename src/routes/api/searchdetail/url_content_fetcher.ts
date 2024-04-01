@@ -13,7 +13,7 @@ export interface FetchURLResult {
 }
 
 export class UrlContentFetcher {
-  private DL_TIMEOUT_MS = 5000;
+  private DL_TIMEOUT_MS = 10000;
   private htmlParser: HtmlParser = new HtmlParser();
 
   public async fetchURLs(urls: string[]): Promise<FetchURLResult[]> {
