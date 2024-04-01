@@ -1,8 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { BraveSearchService } from './brave_search';
-
-const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
-
+import { checkBearerToken } from '../../../lib/libraries/request_tokens';
 
 export class BraveSearchEndpoint {
     private braveSearchService: BraveSearchService;
@@ -12,7 +10,7 @@ export class BraveSearchEndpoint {
     }
 
     public async search(url: URL, request: Request, freshness: string = ""): Promise<Response> {
-        if (!this.checkBearerToken(url, request)) {
+        if (!checkBearerToken(url, request)) {
             return json({ error: 'Invalid token' }, { status: 401 });
         }
         const query = url.searchParams.get('query');
@@ -28,12 +26,4 @@ export class BraveSearchEndpoint {
             return json({ error: JSON.stringify(err) }, { status: 500 });
         }
     };
-
-    private checkBearerToken(url: URL, req: Request): boolean {
-        let token = req.headers.get('password');
-        if (!token) {
-            token = url.searchParams.get('password');
-        }
-        return token === BEARER_TOKEN;
-    }
 }

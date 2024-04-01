@@ -1,12 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { BraveSearchService } from '../search/brave_search';
 import { QueryVector } from './query_vector';
 import type { QueryVectorResult, ConsideredDoc } from './query_vector';
 import { Document } from "@langchain/core/documents";
-import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult, type SearchEngineResult } from '../searchdetail/brave_search_detail';
-import { BraveSearchDetailEndpoint } from '../searchdetail/search_detail_endpoint';
-import { UrlContentFetcher } from '../searchdetail/url_content_fetcher';
 import { SearchQueryEndpoint } from './search_query_endpoint';
+import type { MyDetailSearchResult, SearchEngineResult } from '../searchdetail/brave_search_detail';
 
 const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{
   url: 'https://example1.com',

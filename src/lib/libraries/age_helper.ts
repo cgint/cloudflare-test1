@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns';
-import type { BraveWebSearchResult } from './brave_search';
+import type { BraveWebSearchResult } from '../../routes/api/search/brave_search';
 
 export interface AgeNormalisedResult {
     age_normalized: string;

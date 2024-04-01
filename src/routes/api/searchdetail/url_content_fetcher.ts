@@ -1,5 +1,5 @@
-import { fetchWithTimeout } from "./fetch_timeout";
-import { HtmlParser as HtmlParser } from "./html_parser";
+import { fetchWithTimeout } from "../../../lib/libraries/fetch_timeout";
+import { HtmlParser as HtmlParser } from "../../../lib/libraries/html_parser";
 
 const DL_MAX_CONCURRENCY = parseInt(import.meta.env.VITE_DL_MAX_CONCURRENCY || '5');
 const HEADERS_FOR_FETCH = {

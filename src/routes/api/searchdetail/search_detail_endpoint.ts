@@ -1,10 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { BraveSearchDetailService } from './brave_search_detail';
 import { DL_DETAIL_FETCH_LIMIT } from './brave_search_detail';
-import type { OtherEndpointInvoker } from './other_endpoint_invoker';
+import type { OtherEndpointInvoker } from '../searchquery/other_endpoint_invoker';
 import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
-
-const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
+import { checkBearerToken } from '../../../lib/libraries/request_tokens';
 
 export class BraveSearchDetailEndpoint {
     private braveSearchDetailService: BraveSearchDetailService;
@@ -16,7 +15,7 @@ export class BraveSearchDetailEndpoint {
     }
 
     public async search(url: URL, request: Request, freshness: string = ""): Promise<Response> {
-        if (!this.checkBearerToken(url, request)) {
+        if (!checkBearerToken(url, request)) {
             return json({ error: 'Invalid token' }, { status: 401 });
         }
         const query = url.searchParams.get('query');
@@ -25,9 +24,7 @@ export class BraveSearchDetailEndpoint {
         }
         try {
             const data = await this.braveSearchDetailService.fetchDetails(query, DL_DETAIL_FETCH_LIMIT, freshness);
-            const server_address = url.protocol + '//' + url.hostname + (url.port ? ':' + url.port : '');
-            const searchquery_url = `${server_address}/api/searchquery?query=${encodeURIComponent(query)}`;
-            const response: AnswerAndSearchData = await this.otherEndpointInvoker.invoke(searchquery_url, this.fetchBearerToken(request, url), data);
+            const response: AnswerAndSearchData = await this.otherEndpointInvoker.search(url, request, data);
             return json({ answer: response.answer, searchdata: response.searchdata });
         } catch (err) {
             console.error("search error", err);
@@ -37,18 +34,6 @@ export class BraveSearchDetailEndpoint {
 
     private exceptionToString(err: any): string {
         return `Type: ${typeof err} - Message: ${err.message} - ${JSON.stringify(err)}`;
-    }
-
-    private checkBearerToken(url: URL, req: Request): boolean {
-        return this.fetchBearerToken(req, url) === BEARER_TOKEN;
-    }
-
-    private fetchBearerToken(req: Request, url: URL): string {
-        let token = req.headers.get('password');
-        if (!token) {
-            token = url.searchParams.get('password');
-        }
-        return token || "";
     }
 }
 

@@ -3,11 +3,9 @@ import { BraveSearchService } from '../search/brave_search';
 import { BraveSearchDetailEndpoint } from './search_detail_endpoint';
 import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult, type SearchEngineResult } from './brave_search_detail';
 import { UrlContentFetcher } from './url_content_fetcher';
-import { QueryVector } from '../searchquery/query_vector';
 import type { QueryVectorResult, ConsideredDoc } from '../searchquery/query_vector';
 import { Document } from "@langchain/core/documents";
-import { OtherEndpointInvoker } from './other_endpoint_invoker';
-import { json } from '@sveltejs/kit';
+import { OtherEndpointInvoker } from '../searchquery/other_endpoint_invoker';
 import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
 
 const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{
@@ -70,7 +68,7 @@ function createSpyOnFetchBraveWebSearchDetailFetchDetail(whatToReturn: MyDetailS
               .mockImplementation(() => Promise.resolve(whatToReturn));
 }
 function createSpyOnOtherEndpointInvoker(whatToReturn: AnswerAndSearchData) {
-  return vi.spyOn(oei, 'invoke')
+  return vi.spyOn(oei, 'search')
               .mockImplementation(() => Promise.resolve(whatToReturn));
 }
 describe('Authentication in +server.ts', () => {
@@ -87,8 +85,7 @@ describe('Authentication in +server.ts', () => {
     const response = await searchDetailEndpoint.search(url, request);
     expect(response.status).toBe(200);
     expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
-    const removeInvokerUrl = request_url.replace('api/search', 'api/searchquery');
-    expect(spyOtherEndpointInvoker).toHaveBeenCalledWith(removeInvokerUrl, 'test', emptyResult);
+    expect(spyOtherEndpointInvoker).toHaveBeenCalledWith(url, request, emptyResult);
     expect(await response.json()).toEqual({ answer: queryVectorResult, searchdata: emptyResult });
   });
 
@@ -104,8 +101,7 @@ describe('Authentication in +server.ts', () => {
     const response = await searchDetailEndpoint.search(url, request);
     expect(response.status).toBe(200);
     expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
-    const removeInvokerUrl = request_url.replace('api/search', 'api/searchquery');
-    expect(spyOtherEndpointInvoker).toHaveBeenCalledWith(removeInvokerUrl, 'test', successfulBraveSearchDetailResults);
+    expect(spyOtherEndpointInvoker).toHaveBeenCalledWith(url, request, successfulBraveSearchDetailResults);
     expect(await response.json()).toEqual({ answer: queryVectorResult, searchdata: successfulBraveSearchDetailResultsSearchEngineResult });
   });
 

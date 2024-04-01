@@ -1,6 +1,5 @@
 import type { BraveSearchService, BraveWebSearchResult, MySearchResult } from '../search/brave_search';
 import { UrlContentFetcher, type FetchURLResult } from './url_content_fetcher';
-import { Document } from "@langchain/core/documents";
 
 export const DL_DETAIL_FETCH_LIMIT = parseInt(import.meta.env.VITE_DL_DETAIL_FETCH_LIMIT || '10');
 

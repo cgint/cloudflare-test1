@@ -1,8 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { QueryVector, type QueryVectorResult } from './query_vector';
-import type { BraveSearchDetailService, MyDetailSearchResult, SearchEngineResult } from '../searchdetail/brave_search_detail';
-
-const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
+import type { MyDetailSearchResult, SearchEngineResult } from '../searchdetail/brave_search_detail';
+import { checkBearerToken } from '../../../lib/libraries/request_tokens';
 
 export interface AnswerAndSearchData {
     answer: QueryVectorResult
@@ -17,7 +16,7 @@ export class SearchQueryEndpoint {
     }
 
     public async search(url: URL, request: Request, data: MyDetailSearchResult[]): Promise<Response> {
-        if (!this.checkBearerToken(url, request)) {
+        if (!checkBearerToken(url, request)) {
             return json({ error: 'Invalid token' }, { status: 401 });
         }
         const query = url.searchParams.get('query');
@@ -38,13 +37,5 @@ export class SearchQueryEndpoint {
 
     private exceptionToString(err: any): string {
         return `Type: ${typeof err} - Message: ${err.message} - ${JSON.stringify(err)}`;
-    }
-
-    private checkBearerToken(url: URL, req: Request): boolean {
-        let token = req.headers.get('password');
-        if (!token) {
-            token = url.searchParams.get('password');
-        }
-        return token === BEARER_TOKEN;
     }
 }
