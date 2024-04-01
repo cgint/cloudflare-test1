@@ -226,7 +226,7 @@
 				{#each search_engine_results as result}
 					<div class="searchresult">
 						<span class="agenormalized"
-							>({result.age_normalized})</span
+							>({result.age_normalized || 'no date provided'})</span
 						>
 						<a href={result.url} target="_blank">{result.title}</a>
 						<div class="docsnippet">{@html result.description}</div>
