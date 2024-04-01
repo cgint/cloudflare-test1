@@ -5,7 +5,7 @@ import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchRes
 import { UrlContentFetcher } from './url_content_fetcher';
 import type { QueryVectorResult, ConsideredDoc } from '../searchquery/query_vector';
 import { Document } from "@langchain/core/documents";
-import { OtherEndpointInvoker } from '../searchquery/other_endpoint_invoker';
+import { SearchQueryEndpointInvoker } from '../searchquery/search_query_endpoint_invoker';
 import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
 
 const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{
@@ -61,10 +61,10 @@ const answerAndSearchDataWithData: AnswerAndSearchData = { answer: queryVectorRe
 const answerAndSearchDataNoData: AnswerAndSearchData = { answer: queryVectorResult, searchdata: [] };
 const braveSearchService = new BraveSearchService();
 const braveSearchDetailService = new BraveSearchDetailService(braveSearchService, new UrlContentFetcher());
-const oei = new OtherEndpointInvoker();
+const oei = new SearchQueryEndpointInvoker();
 const searchDetailEndpoint = new BraveSearchDetailEndpoint(braveSearchDetailService, oei);
 function createSpyOnFetchBraveWebSearchDetailFetchDetail(whatToReturn: MyDetailSearchResult[]) {
-  return vi.spyOn(braveSearchDetailService, 'fetchDetails')
+  return vi.spyOn(braveSearchDetailService, 'fetchDetailsRemote')
               .mockImplementation(() => Promise.resolve(whatToReturn));
 }
 function createSpyOnOtherEndpointInvoker(whatToReturn: AnswerAndSearchData) {
@@ -77,15 +77,15 @@ describe('Authentication in +server.ts', () => {
     const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(emptyResult);
     const spyOtherEndpointInvoker = createSpyOnOtherEndpointInvoker(answerAndSearchDataNoData);
     const search_query: string = 'Tell me more';
-    const request_url: string = 'http://localhost/api/search?query='+encodeURIComponent(search_query);
+    const request_url: string = 'http://localhost/api/searchdetail?query='+encodeURIComponent(search_query);
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'test' },
     });
     const response = await searchDetailEndpoint.search(url, request);
-    expect(response.status).toBe(200);
-    expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
+    expect(spyFetch).toHaveBeenCalledWith(url, request, search_query, DL_DETAIL_FETCH_LIMIT, '');
     expect(spyOtherEndpointInvoker).toHaveBeenCalledWith(url, request, emptyResult);
+    expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ answer: queryVectorResult, searchdata: emptyResult });
   });
 
@@ -93,22 +93,22 @@ describe('Authentication in +server.ts', () => {
     const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyOtherEndpointInvoker = createSpyOnOtherEndpointInvoker(answerAndSearchDataWithData);
     const search_query: string = 'Tell me more';
-    const request_url: string = 'http://localhost/api/search?query='+encodeURIComponent(search_query);
+    const request_url: string = 'http://localhost/api/searchdetail?query='+encodeURIComponent(search_query);
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'test' },
     });
     const response = await searchDetailEndpoint.search(url, request);
-    expect(response.status).toBe(200);
-    expect(spyFetch).toHaveBeenCalledWith(search_query, DL_DETAIL_FETCH_LIMIT, '');
+    expect(spyFetch).toHaveBeenCalledWith(url, request, search_query, DL_DETAIL_FETCH_LIMIT, '');
     expect(spyOtherEndpointInvoker).toHaveBeenCalledWith(url, request, successfulBraveSearchDetailResults);
+    expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ answer: queryVectorResult, searchdata: successfulBraveSearchDetailResultsSearchEngineResult });
   });
 
   it('should return a 400 status if the query parameter is missing', async () => {
     const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyOtherEndpointInvoker = createSpyOnOtherEndpointInvoker(answerAndSearchDataWithData);
-    const request_url: string = 'http://localhost/api/search';
+    const request_url: string = 'http://localhost/api/searchdetail';
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'test' },
@@ -122,7 +122,7 @@ describe('Authentication in +server.ts', () => {
   it('should reject a request with an invalid password with a 401 status', async () => {
     const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyOtherEndpointInvoker = createSpyOnOtherEndpointInvoker(answerAndSearchDataWithData);
-    const request_url = 'http://localhost/api/search';
+    const request_url = 'http://localhost/api/searchdetail';
     const url = new URL(request_url);
     const request = new Request(request_url, {
       headers: { 'password': 'invalidToken123' },
@@ -136,7 +136,7 @@ describe('Authentication in +server.ts', () => {
   it('should reject a request without a password with a 401 status', async () => {
     const spyFetch = createSpyOnFetchBraveWebSearchDetailFetchDetail(successfulBraveSearchDetailResults);
     const spyOtherEndpointInvoker = createSpyOnOtherEndpointInvoker(answerAndSearchDataWithData);
-    const request_url = 'http://localhost/api/search';
+    const request_url = 'http://localhost/api/searchdetail';
     const url = new URL(request_url);
     const request = new Request(request_url);
     const response = await searchDetailEndpoint.search(url, request);

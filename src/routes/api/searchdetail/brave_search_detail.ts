@@ -35,5 +35,15 @@ export class BraveSearchDetailService {
         const textContents: FetchURLResult[] = await this.urlContentFetcher.fetchURLs(limitedResultUrls);
         return limitedResults.map((result, index) => ({ ...result, textContent: textContents[index].value }));
     }
+
+    public async fetchDetailsRemote(url: URL, request: Request, query: string, limit: number = DL_DETAIL_FETCH_LIMIT, freshness: string = ''): Promise<MyDetailSearchResult[]> {
+        const results: MySearchResult[] = await this.braveSearchService.fetchBraveWebSearchMyResults(query, freshness);
+        const limitedResults = results.slice(0, limit);
+        console.log("about to fetch details for ", limitedResults.length, " urls from ", results.length, " results");
+        const limitedResultUrls = limitedResults.map(result => result.url);
+        const textContents: FetchURLResult[] = await this.urlContentFetcher.fetchURLsRemote(url, request, limitedResultUrls);
+        console.log("num-limitedResultUrls", limitedResultUrls.length, "num-textContents", textContents.length);
+        return limitedResults.map((result, index) => ({ ...result, textContent: textContents[index].value }));
+    }
 }
 

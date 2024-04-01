@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { BraveSearchService } from './brave_search';
-import { checkBearerToken } from '../../../lib/libraries/request_tokens';
+import { checkBearerToken } from '$lib/libraries/request_tokens';
 
 export class BraveSearchEndpoint {
     private braveSearchService: BraveSearchService;

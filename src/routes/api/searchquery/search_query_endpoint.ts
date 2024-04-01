@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { QueryVector, type QueryVectorResult } from './query_vector';
 import type { MyDetailSearchResult, SearchEngineResult } from '../searchdetail/brave_search_detail';
-import { checkBearerToken } from '../../../lib/libraries/request_tokens';
+import { checkBearerToken } from '$lib/libraries/request_tokens';
+import { exceptionToString } from '$lib/libraries/exception_helper';
 
 export interface AnswerAndSearchData {
     answer: QueryVectorResult
@@ -31,11 +32,7 @@ export class SearchQueryEndpoint {
             return json(answerAndSearchData);
         } catch (err) {
             console.error("search error", err);
-            return json({ error: this.exceptionToString(err) }, { status: 500 });
+            return json({ error: exceptionToString(err) }, { status: 500 });
         }
     };
-
-    private exceptionToString(err: any): string {
-        return `Type: ${typeof err} - Message: ${err.message} - ${JSON.stringify(err)}`;
-    }
 }

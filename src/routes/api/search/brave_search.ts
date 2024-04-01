@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { get_age_normalized, sortedByAgeNormalisedAsc, type AgeNormalisedResult } from '../../../lib/libraries/age_helper';
+import { get_age_normalized, sortedByAgeNormalisedAsc, type AgeNormalisedResult } from '$lib/libraries/age_helper';
 
 const BRAVE_WEB_SEARCH_API_ENDPOINT: string = 'https://api.search.brave.com/res/v1/web/search';
 const BRAVE_NEWS_SEARCH_API_ENDPOINT: string = 'https://api.search.brave.com/res/v1/news/search';

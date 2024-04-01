@@ -1,8 +1,8 @@
 import type { AnswerAndSearchData } from './search_query_endpoint';
 import type { MyDetailSearchResult } from '../searchdetail/brave_search_detail';
-import { fetchBearerToken } from '../../../lib/libraries/request_tokens';
+import { fetchBearerToken } from '$lib/libraries/request_tokens';
 
-export class OtherEndpointInvoker {
+export class SearchQueryEndpointInvoker {
     public async search(url: URL, request: Request, data: MyDetailSearchResult[]): Promise<AnswerAndSearchData> {
         const server_address = url.protocol + '//' + url.hostname + (url.port ? ':' + url.port : '');
         const query = url.searchParams.get('query') ?? '';
