@@ -27,9 +27,11 @@
 	};
 	let question: string = "";
 	let freshness: string = "";
+	let customUrls: string = "";
 
 	onMount(() => {
 		question = import.meta.env.VITE_DEMO_QUESTION || "";
+		customUrls = import.meta.env.VITE_DEMO_URLS || "";
 		token = import.meta.env.VITE_DEMO_TOKEN || "";
 	});
 
@@ -82,7 +84,8 @@
 		search_engine_results = [];
 		processing_question = true;
 		const formattedQuestion = encodeURIComponent(question);
-		const url = `/api/searchdetail?query=${formattedQuestion}&freshness=${freshness}`;
+		const formattedURLs = encodeURIComponent(customUrls);
+		const url = `/api/searchdetail?query=${formattedQuestion}&freshness=${freshness}&urls=${formattedURLs}`;
 
 		try {
 			await fetch(url, {
@@ -158,6 +161,13 @@
 				bind:value={question}
 				placeholder="Ask your question here..."
 			/>
+			<!-- New textarea for URLs -->
+			<textarea
+				class="custom-urls"
+				bind:value={customUrls}
+				placeholder="Enter custom URLs here..."
+				rows="3"
+			></textarea>
 			<button
 				class="activebutton"
 				class:processing={processing_question}
@@ -315,6 +325,9 @@
 		font-size: 16px;
 	}
 	input.question {
+		width: 100%;
+	}
+	textarea.custom-urls {
 		width: 100%;
 	}
 

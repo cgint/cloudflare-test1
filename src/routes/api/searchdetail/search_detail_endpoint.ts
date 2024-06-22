@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { BraveSearchDetailService } from './brave_search_detail';
 import { DL_DETAIL_FETCH_LIMIT } from './brave_search_detail';
-import type { SearchQueryEndpointInvoker } from '../searchquery/search_query_endpoint_invoker';
+import type { SearchQueryEndpointInvoker } from '../../../lib/libraries/search_query_endpoint_invoker';
 import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
 import { checkBearerToken } from '$lib/libraries/request_tokens';
 import { exceptionToString } from '$lib/libraries/exception_helper';
@@ -20,12 +20,22 @@ export class BraveSearchDetailEndpoint {
             return json({ error: 'Invalid token' }, { status: 401 });
         }
         const query = url.searchParams.get('query');
+        const urls = url.searchParams.get('urls');
+        const urlsList = urls ? urls.split(',') : [];
         if (!query) {
             return json({ error: 'Query parameter is required' }, { status: 400 });
         }
+        if (query === '') {
+            return json({ error: 'Query parameter is not allowed to be empty' }, { status: 400 });
+        }
         try {
-            const data = await this.braveSearchDetailService.fetchDetailsRemote(url, request, query, DL_DETAIL_FETCH_LIMIT, freshness);
-            const response: AnswerAndSearchData = await this.otherEndpointInvoker.search(url, request, data);
+            const data = await this.braveSearchDetailService.fetchDetailsRemote(url, request, query, urlsList, DL_DETAIL_FETCH_LIMIT, freshness);
+            let response: AnswerAndSearchData
+            if (urlsList.length > 0) {
+                response = await this.otherEndpointInvoker.invoke(url, "searchfull", request, data);
+            } else {
+                response = await this.otherEndpointInvoker.invoke(url, "searchquery", request, data);
+            }
             return json({ answer: response.answer, searchdata: response.searchdata });
         } catch (err) {
             console.error("search error", err);

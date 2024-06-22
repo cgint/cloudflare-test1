@@ -5,7 +5,7 @@ import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchRes
 import { UrlContentFetcher } from './url_content_fetcher';
 import type { QueryVectorResult, ConsideredDoc } from '../searchquery/query_vector';
 import { Document } from "@langchain/core/documents";
-import { SearchQueryEndpointInvoker } from '../searchquery/search_query_endpoint_invoker';
+import { SearchQueryEndpointInvoker } from '../../../lib/libraries/search_query_endpoint_invoker';
 import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
 
 const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{

@@ -36,10 +36,34 @@ export class BraveSearchDetailService {
         return limitedResults.map((result, index) => ({ ...result, textContent: textContents[index].value }));
     }
 
-    public async fetchDetailsRemote(url: URL, request: Request, query: string, limit: number = DL_DETAIL_FETCH_LIMIT, freshness: string = ''): Promise<MyDetailSearchResult[]> {
-        const results: MySearchResult[] = await this.braveSearchService.fetchBraveWebSearchMyResults(query, freshness);
-        const limitedResults = results.slice(0, limit);
-        console.log("about to fetch details for ", limitedResults.length, " urls from ", results.length, " results");
+    public async fetchDetailsRemote(url: URL, request: Request, query: string, urls: string[], limit: number = DL_DETAIL_FETCH_LIMIT, freshness: string = ''): Promise<MyDetailSearchResult[]> {
+        let limitedResults: MySearchResult[] = [];
+        if(urls.length > 0) {
+            limitedResults = this.createSearchResultsFromURLs(urls);
+        } else {
+            const results: MySearchResult[] = await this.braveSearchService.fetchBraveWebSearchMyResults(query, freshness);
+            limitedResults = results.slice(0, limit);
+            console.log("about to fetch details for ", limitedResults.length, " urls from ", results.length, " results");
+        }
+        return await this.fetchFromUrls(url, request, limitedResults);
+    }
+
+    private createSearchResultsFromURLs(urls: string[]): MySearchResult[] {
+        return urls.map(url => (
+            {
+                url: url,
+                title: url,
+                description: url,
+                language: '',
+                type: '',
+                subtype: '',
+                age_normalized: '',
+                extra_snippets: []
+            }
+        ));
+    }
+    
+    private async fetchFromUrls(url: URL, request: Request,  limitedResults: MySearchResult[]) {
         const limitedResultUrls = limitedResults.map(result => result.url);
         const textContents: FetchURLResult[] = await this.urlContentFetcher.fetchURLsRemote(url, request, limitedResultUrls);
         console.log("num-limitedResultUrls", limitedResultUrls.length, "num-textContents", textContents.length);

@@ -1,6 +1,6 @@
 import { BraveSearchService } from '../search/brave_search';
 import { BraveSearchDetailService } from './brave_search_detail';
-import { SearchQueryEndpointInvoker } from '../searchquery/search_query_endpoint_invoker';
+import { SearchQueryEndpointInvoker } from '../../../lib/libraries/search_query_endpoint_invoker';
 import { BraveSearchDetailEndpoint } from './search_detail_endpoint';
 import { UrlContentFetcher } from './url_content_fetcher';
 
