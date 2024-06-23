@@ -213,16 +213,12 @@
 		<div class="outputsection considered">
 			{#if !processing_question && answer !== ""}
 				<p>
-					<u
-						>For the answer the following {answer_result
-							.docsConsidered.length} web-page-pieces of information
-						were considered: (From {answer_result.stats.splitCount} overall)</u
-					>
+					<u>For the answer the following {answer_result.docsConsidered.length} web-page-pieces of information
+						were considered: (From {answer_result.stats.splitCount} overall)</u>
 				</p>
 				{#each answer_result.docsConsidered as doc}
-					<div class="consideredcontent">
-						<span class="agenormalized">({doc.age_normalized || 'no date provided'})</span
-						>
+					<div class="consideredcontent" class:single={answer_result.docsConsidered.length === 1}>
+						<span class="agenormalized">({doc.age_normalized || 'no date provided'})</span>
 						<a href={doc.url} target="_blank">{doc.url}</a>
 						<div class="docsnippet">{@html doc.contentSnippet}</div>
 					</div>
@@ -312,10 +308,13 @@
 		margin-bottom: 15px;
 		margin-left: 5px;
 		font-style: italic;
-		height: 50px;
+		height: 100px;
 		overflow: auto;
 	}
 
+	.outputsection.considered .consideredcontent.single .docsnippet {
+		height: 300px;
+	}
 	input {
 		padding: 8px 12px;
 		border: 1px solid #ccc;
