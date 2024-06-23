@@ -21,7 +21,7 @@ export class BraveSearchDetailEndpoint {
         }
         const query = url.searchParams.get('query');
         const urls = url.searchParams.get('urls');
-        const urlsList = urls ? urls.split(',') : [];
+        const urlsList = urls ? urls.split('\n') : [];
         if (!query) {
             return json({ error: 'Query parameter is required' }, { status: 400 });
         }
