@@ -1,12 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { BraveSearchService } from '../search/brave_search';
 import { BraveSearchDetailEndpoint } from './search_detail_endpoint';
-import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult, type SearchEngineResult } from './brave_search_detail';
+import { BraveSearchDetailService, DL_DETAIL_FETCH_LIMIT, type MyDetailSearchResult } from './brave_search_detail';
 import { UrlContentFetcher } from './url_content_fetcher';
-import type { QueryVectorResult, ConsideredDoc } from '../searchquery/query_vector';
 import { Document } from "@langchain/core/documents";
 import { SearchQueryEndpointInvoker } from '../../../lib/libraries/search_query_endpoint_invoker';
-import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
+import type { AnswerAndSearchData, SearchEngineResult, QueryResult, ConsideredDoc } from '../../../lib/libraries/types';
 
 const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{
   url: 'https://example1.com',
@@ -50,7 +49,7 @@ const queryVectorResultDocsConsidered: ConsideredDoc[] = successfulBraveSearchDe
   age_normalized: result.age_normalized,
   contentSnippet: result.extra_snippets[0]
 }));
-const queryVectorResult: QueryVectorResult = {
+const queryVectorResult: QueryResult = {
   result: "This is the answer to the question.",
   docsConsidered: queryVectorResultDocsConsidered,
   stats: {

@@ -55,21 +55,22 @@ export class UrlContentFetcher {
   public async fetchURLsRemote(url: URL, request: Request, urls: string[]): Promise<FetchURLResult[]> {
     const results: PromiseSettledResult<Response>[] = await this.downloadURLsRemote(url, request, urls);
     return Promise.all(results.map(async (result: PromiseSettledResult<Response>, index) => {
+      const readableIndex = index + 1;
       const result_array: FetchURLResult[] = [];
       let val: string = "";
       if (result.status === 'fulfilled') { // without this duplication the compiler can not infer the type of result
-        console.log(`Request ${index} fulfilled`);
+        console.log(`Request ${readableIndex} fulfilled`);
         if (result.value instanceof Response) {
           const multi_urls: FetchURLResult[] = await result.value.json();
-          console.log(`Success from request ${index} - ${multi_urls.length}`);
+          console.log(`Success from request ${readableIndex} - ${multi_urls.length}`);
           for (const multi_url of multi_urls) {
             result_array.push({ url: multi_url.url, value: multi_url.value, success: multi_url.success });
           }
         }
       } else {
         val = result.reason.message;
-        console.error(`Error fetching request ${index}:`, val);
-        result_array.push({ url: `request ${index}`, value: val, success: false });
+        console.error(`Error fetching request ${readableIndex}:`, val);
+        result_array.push({ url: `request ${readableIndex}`, value: val, success: false });
       }
       return result_array;
     })).then((array_of_arrays: FetchURLResult[][]) => {

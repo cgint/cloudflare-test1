@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { BraveSearchService } from './brave_search';
 import { BraveSearchEndpoint } from './search_endpoint';
-import type { BraveWebSearchResponse, BraveWebSearchResult, MySearchResult } from './brave_search';
+import type { BraveWebSearchResponse, BraveWebSearchResult } from './brave_search';
 
 
 const successfulBraveSearchNoResults: BraveWebSearchResponse = {

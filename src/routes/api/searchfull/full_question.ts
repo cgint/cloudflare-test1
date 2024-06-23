@@ -4,26 +4,13 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import type { MySearchResult } from "../search/brave_search";
-import type { MyDetailSearchResult, SearchEngineResult } from "../searchdetail/brave_search_detail";
-import { getLlmFor } from "../../../lib/libraries/llm";
+import type { MyDetailSearchResult } from "../searchdetail/brave_search_detail";
+import { getLlmFromEnvironment } from "../../../lib/libraries/llm";
+import type { QueryResult, SearchEngineResult } from "../../../lib/libraries/types";
 
-export interface ConsideredDoc {
-    url: string;
-    age_normalized: string;
-    contentSnippet: string;
-}
-
-export interface FullQueryResult {
-    result: string;
-    docsConsidered: ConsideredDoc[];
-    stats: {
-        docCount: number;
-        splitCount: number;
-    };
-}
 
 export class FullQuestion {
-    async query(question: string, docs: Document[]): Promise<FullQueryResult> {
+    async query(question: string, docs: Document[]): Promise<QueryResult> {
         if (docs.length === 0) {
             return {
                 result: "Got no documents as input so I can not answer your question!",
@@ -34,7 +21,7 @@ export class FullQuestion {
             };
         }
         const query_full_start_time = performance.now();
-        const chain = await this.buildChain();
+        const chain = await this.buildRAGChain();
 
         const rag_start_time = performance.now();
         const runOutput = await chain.invoke({
@@ -59,28 +46,33 @@ export class FullQuestion {
         };
     }
 
-    private async buildChain() {
-        let llm_model = import.meta.env.VITE_INFERENCE_MODEL;
-        console.log("using model", llm_model);
-        const llm = getLlmFor(llm_model);
+
+    private async buildRAGChain() {
+        const llm = getLlmFromEnvironment();
         const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt");
-        const chain = await createStuffDocumentsChain({
+        const ragChain = await createStuffDocumentsChain({
             llm,
             prompt,
             outputParser: new StringOutputParser(),
         });
-        return chain;
+        return ragChain;
     }
 
     public toDocuments(pages: MyDetailSearchResult[]): Document[] {
         return pages.map((page) => new Document({
             pageContent: page.textContent,
-            metadata: { source: "webpage", url: page.url, age_normalized: page.age_normalized },
+            metadata: { 
+                source: "webpage", 
+                url: page.url, 
+                age_normalized: page.age_normalized, 
+                searchQuery: page.searchQuery 
+            },
         }));
     }
 
     public toSearchEngineResult(pages: MySearchResult[]): SearchEngineResult[] {
         return pages.map((page) => ({
+            searchQuery: page.searchQuery,
             url: page.url,
             title: page.title,
             description: page.description,

@@ -10,6 +10,7 @@ const searchDetailEndpoint = new BraveSearchDetailEndpoint(bsds, new SearchQuery
 export const GET = async ({ url, request }) => {
     const params = new URLSearchParams(url.search);
     const freshness = params.get('freshness') || "";
-    return searchDetailEndpoint.search(url, request, freshness);
+    const useLLMQueries = params.get('useLLMQueries') === 'true';
+    return searchDetailEndpoint.search(url, request, freshness, useLLMQueries);
 };
 

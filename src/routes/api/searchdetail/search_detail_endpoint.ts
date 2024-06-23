@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { BraveSearchDetailService } from './brave_search_detail';
 import { DL_DETAIL_FETCH_LIMIT } from './brave_search_detail';
 import type { SearchQueryEndpointInvoker } from '../../../lib/libraries/search_query_endpoint_invoker';
-import type { AnswerAndSearchData } from '../searchquery/search_query_endpoint';
+import type { AnswerAndSearchData } from '../../../lib/libraries/types';
 import { checkBearerToken } from '$lib/libraries/request_tokens';
 import { exceptionToString } from '$lib/libraries/exception_helper';
 
@@ -15,7 +15,7 @@ export class BraveSearchDetailEndpoint {
         this.otherEndpointInvoker = otherEndpointInvoker;
     }
 
-    public async search(url: URL, request: Request, freshness: string = ""): Promise<Response> {
+    public async search(url: URL, request: Request, freshness: string = "", useLLMQueries: boolean = false): Promise<Response> {
         if (!checkBearerToken(url, request)) {
             return json({ error: 'Invalid token' }, { status: 401 });
         }
@@ -29,7 +29,7 @@ export class BraveSearchDetailEndpoint {
             return json({ error: 'Query parameter is not allowed to be empty' }, { status: 400 });
         }
         try {
-            const data = await this.braveSearchDetailService.fetchDetailsRemote(url, request, query, urlsList, DL_DETAIL_FETCH_LIMIT, freshness);
+            const data = await this.braveSearchDetailService.fetchDetailsRemote(url, request, query, urlsList, DL_DETAIL_FETCH_LIMIT, freshness, useLLMQueries);
             let response: AnswerAndSearchData
             if (urlsList.length > 0) {
                 response = await this.otherEndpointInvoker.invoke(url, "searchfull", request, data);

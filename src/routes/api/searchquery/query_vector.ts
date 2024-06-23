@@ -6,31 +6,16 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import type { MySearchResult } from "../search/brave_search";
-import type { MyDetailSearchResult, SearchEngineResult } from "../searchdetail/brave_search_detail";
-import { getEmbeddingsProviderFor } from "../../../lib/libraries/llm";
-import { getLlmFor } from "../../../lib/libraries/llm";
-
-export interface ConsideredDoc {
-    url: string;
-    age_normalized: string;
-    contentSnippet: string;
-}
-
-export interface QueryVectorResult {
-    result: string;
-    docsConsidered: ConsideredDoc[];
-    stats: {
-        docCount: number;
-        splitCount: number;
-    };
-}
+import type { MyDetailSearchResult } from "../searchdetail/brave_search_detail";
+import { getEmbeddingsProviderFor, getLlmFromEnvironment } from "../../../lib/libraries/llm";
+import type { SearchEngineResult, QueryResult } from "../../../lib/libraries/types";
 
 export class QueryVector {
     private textSplitter = new RecursiveCharacterTextSplitter({
         chunkSize: 2000,
         chunkOverlap: 400
     });
-    async query(question: string, docs: Document[]): Promise<QueryVectorResult> {
+    async query(question: string, docs: Document[]): Promise<QueryResult> {
         if (docs.length === 0) {
             return {
                 result: "Got no documents as input so I can not answer your question!",
@@ -93,9 +78,7 @@ export class QueryVector {
     }
 
     private async buildRAGChain() {
-        let llm_model = import.meta.env.VITE_INFERENCE_MODEL;
-        console.log("using model", llm_model);
-        const llm = getLlmFor(llm_model);
+        const llm = getLlmFromEnvironment();
         const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt");
         const ragChain = await createStuffDocumentsChain({
             llm,
@@ -108,12 +91,18 @@ export class QueryVector {
     public toDocuments(pages: MyDetailSearchResult[]): Document[] {
         return pages.map((page) => new Document({
             pageContent: page.textContent,
-            metadata: { source: "webpage", url: page.url, age_normalized: page.age_normalized },
+            metadata: { 
+                source: "webpage", 
+                url: page.url, 
+                age_normalized: page.age_normalized, 
+                searchQuery: page.searchQuery 
+            },
         }));
     }
 
     public toSearchEngineResult(pages: MySearchResult[]): SearchEngineResult[] {
         return pages.map((page) => ({
+            searchQuery: page.searchQuery,
             url: page.url,
             title: page.title,
             description: page.description,

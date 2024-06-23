@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { FullQuestion } from './full_question';
-import type { QueryVectorResult, ConsideredDoc } from './full_question';
 import { Document } from "@langchain/core/documents";
 import { SearchQueryEndpoint } from './search_query_endpoint';
-import type { MyDetailSearchResult, SearchEngineResult } from '../searchdetail/brave_search_detail';
+import type { MyDetailSearchResult } from '../searchdetail/brave_search_detail';
+import type { QueryResult, ConsideredDoc, SearchEngineResult } from '../../../lib/libraries/types';
 
 const successfulBraveSearchDetailResults: MyDetailSearchResult[] = [{
   url: 'https://example1.com',
@@ -47,7 +47,7 @@ const queryVectorResultDocsConsidered: ConsideredDoc[] = successfulBraveSearchDe
   age_normalized: result.age_normalized,
   contentSnippet: result.extra_snippets[0]
 }));
-const queryVectorResult: QueryVectorResult = {
+const queryVectorResult: QueryResult = {
   result: "This is the answer to the question.",
   docsConsidered: queryVectorResultDocsConsidered,
   stats: {
@@ -95,7 +95,7 @@ const successfulBraveSearchResultsMyResultsOrderedByAgeNormAsc: MySearchResult[]
 */
 const queryVector = new FullQuestion();
 const searchQueryEndpoint = new SearchQueryEndpoint(queryVector);
-function createSpyOnQueryVector(whatToReturn: QueryVectorResult) {
+function createSpyOnQueryVector(whatToReturn: QueryResult) {
   return vi.spyOn(queryVector, 'query')
               .mockImplementation(() => Promise.resolve(whatToReturn));
 }

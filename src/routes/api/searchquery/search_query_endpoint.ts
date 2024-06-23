@@ -1,13 +1,9 @@
 import { json } from '@sveltejs/kit';
-import { QueryVector, type QueryVectorResult } from './query_vector';
-import type { MyDetailSearchResult, SearchEngineResult } from '../searchdetail/brave_search_detail';
+import { QueryVector } from './query_vector';
+import type { MyDetailSearchResult } from '../searchdetail/brave_search_detail';
 import { checkBearerToken } from '$lib/libraries/request_tokens';
 import { exceptionToString } from '$lib/libraries/exception_helper';
-
-export interface AnswerAndSearchData {
-    answer: QueryVectorResult
-    searchdata: SearchEngineResult[]
-}
+import type { AnswerAndSearchData } from "../../../lib/libraries/types";
 
 export class SearchQueryEndpoint {
     private queryVector: QueryVector;

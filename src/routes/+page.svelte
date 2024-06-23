@@ -15,6 +15,7 @@
 		};
 	}
 	interface SearchEngineResult {
+		searchQuery: string;
 		url: string;
 		title: string;
 		description: string;
@@ -43,6 +44,7 @@
 	let speechSynthesisSupportedCheckDone = false;
 	let speechSynthesisSupported = false;
 	let autoSpeak = false;
+	let useLLMQueries = false;
 	let isSpeaking = false;
 
 	onMount(() => {
@@ -85,7 +87,7 @@
 		processing_question = true;
 		const formattedQuestion = encodeURIComponent(question);
 		const formattedURLs = encodeURIComponent(customUrls);
-		const url = `/api/searchdetail?query=${formattedQuestion}&freshness=${freshness}&urls=${formattedURLs}`;
+		const url = `/api/searchdetail?query=${formattedQuestion}&freshness=${freshness}&urls=${formattedURLs}&useLLMQueries=${useLLMQueries}`;
 
 		try {
 			await fetch(url, {
@@ -153,6 +155,14 @@
 						<option value="py">Past Year</option>
 						<option value="">All Time</option>
 					</select>
+				</div>
+				<div class="use-llm-queries">
+					<input
+						id="useLLMQueries"
+						type="checkbox"
+						bind:checked={useLLMQueries}
+					/>
+					<label for="useLLMQueries">Use LLM for search queries</label>
 				</div>
 			</div>
 			<input
@@ -224,17 +234,13 @@
 					</div>
 				{/each}
 				<p>
-					<u
-						>Initially {search_engine_results.length} web pages found
-						by search engine</u
-					>
+					<u>Initially {search_engine_results.length} web pages found by search engine</u>
 				</p>
 				{#each search_engine_results as result}
 					<div class="searchresult">
-						<span class="agenormalized"
-							>({result.age_normalized || 'no date provided'})</span
-						>
+						<span class="agenormalized">({result.age_normalized || 'no date provided'})</span>
 						<a href={result.url} target="_blank">{result.title}</a>
+						<span class="searchquery">SearchQuery: '{result.searchQuery}'</span>
 						<div class="docsnippet">{@html result.description}</div>
 					</div>
 				{/each}
@@ -272,6 +278,10 @@
 		float: right;
 	}
 	div.formsettings div.freshness {
+		float: left;
+		margin-left: 10px;
+	}
+	div.formsettings div.use-llm-queries {
 		float: left;
 		margin-left: 10px;
 	}

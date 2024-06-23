@@ -62,6 +62,7 @@ export interface BraveWebSearchResult {
 
 
 export interface MySearchResult extends AgeNormalisedResult {
+    searchQuery?: string;
     url: string;
     title: string;
     description: string;
@@ -97,6 +98,9 @@ export class BraveSearchService {
     public async fetchBraveWebSearchMyResults(query: string, freshness: string = ''): Promise<MySearchResult[]> {
         const r = await this.fetchBraveWebSearchResults(query, freshness);
         const simplifiedResults: MySearchResult[] = r.web ? r.web.results.map(this.toMySearchResult) : [];
+        simplifiedResults.forEach(result => {
+            result.searchQuery = query;
+        });
         return sortedByAgeNormalisedAsc(simplifiedResults);
     }
 
