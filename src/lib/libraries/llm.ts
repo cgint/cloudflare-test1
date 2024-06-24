@@ -3,7 +3,7 @@ import { TogetherAIEmbeddings } from "@langchain/community/embeddings/togetherai
 import { TogetherAI } from "@langchain/community/llms/togetherai";
 import { ChatGroq } from "@langchain/groq";
 // import { ChatCloudflareWorkersAI } from "@langchain/cloudflare";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import { BaseChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -34,6 +34,11 @@ export function getEmbeddingsProviderFor(model: string) {
         return new OpenAIEmbeddings({
             openAIApiKey: OPENAI_API_KEY,
             modelName: model.replace("openai/", "")
+        });
+    } else if (model.startsWith("google/")) {
+        return new GoogleGenerativeAIEmbeddings({
+            apiKey: GEMINI_API_KEY,
+            modelName: model.replace("google/", "")
         });
     } else {
         throw new Error(`Unable to determine the provider for embedding model: ${model}`);
