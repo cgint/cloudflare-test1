@@ -38,10 +38,12 @@ export class BraveSearchDetailService {
             limitedResults = this.createSearchResultsFromURLs(urls, "provided-urls");
         } else {
             const queries = useLLMQueries ? await this.getQueriesForBraveSearch(query) : [query];
-            for (const q of queries) {
-                const results: MySearchResult[] = await this.braveSearchService.fetchBraveWebSearchMyResults(q, freshness);
-                limitedResults = limitedResults.concat(results.slice(0, limit));
-            }
+            const fetchPromises = queries.map(q => 
+                this.braveSearchService.fetchBraveWebSearchMyResults(q, freshness)
+                    .then(results => results.slice(0, limit))
+            );
+            const allResults = await Promise.all(fetchPromises);
+            limitedResults = allResults.flat();
             console.log("about to fetch details for ", limitedResults.length, " urls");
         }
         return await this.fetchFromUrls(url, request, limitedResults);

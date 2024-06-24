@@ -96,6 +96,7 @@ export class BraveSearchService {
 
     // TODO this is only tested via endpoint as the logic moved here
     public async fetchBraveWebSearchMyResults(query: string, freshness: string = ''): Promise<MySearchResult[]> {
+        console.log(`fetchBraveWebSearchMyResults: query: ${query}, freshness: ${freshness}`);
         const r = await this.fetchBraveWebSearchResults(query, freshness);
         const simplifiedResults: MySearchResult[] = r.web ? r.web.results.map(this.toMySearchResult) : [];
         simplifiedResults.forEach(result => {
