@@ -51,11 +51,14 @@ export class BraveSearchDetailService {
         const examples = [
             {"query": "When was Lewis Hamilton born ?", "output": "'Birth date Lewis Hamilton'"},
             {"query": "Is Michael J. Fox older than Bjork ?", "output": "'Birth date Michael J. Fox' +++ 'Birth date Bjork'"},
-            {"query": "Are there more inhabitants in Paris or London ?", "output": "'Inhabitants Paris' +++ 'Inhabitants London'"}
+            {"query": "Are there more inhabitants in Paris or London ?", "output": "'Number of inhabitants Paris' +++ 'Number of inhabitants London'"}
         ]
         const exampleString = examples.map(example => `User question: ${example.query}\nWeb search queries: ${example.output}`).join("\n");
-        const today = new Date().toISOString().split('T')[0];
-        const time = new Date().toISOString().split('T')[1].split('.')[0];
+        const nowDate = new Date();
+        const locale = 'en-CA'; // outputs 2024-03-01 for today and 12:00:00 for time
+        const timezone = 'UTC';
+        const today = nowDate.toLocaleDateString(locale, { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: timezone });
+        const time = nowDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: timezone });
         const thePrompt = ChatPromptTemplate.fromTemplate(`
 You are a helpful assistant that knows how to transform a user question into one or several web search queries.
 
