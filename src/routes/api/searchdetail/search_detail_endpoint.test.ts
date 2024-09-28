@@ -67,7 +67,7 @@ function createSpyOnFetchBraveWebSearchDetailFetchDetail(whatToReturn: MyDetailS
               .mockImplementation(() => Promise.resolve(whatToReturn));
 }
 function createSpyOnOtherEndpointInvoker(whatToReturn: AnswerAndSearchData) {
-  return vi.spyOn(oei, 'search')
+  return vi.spyOn(oei, 'invoke')
               .mockImplementation(() => Promise.resolve(whatToReturn));
 }
 describe('Authentication in +server.ts', () => {

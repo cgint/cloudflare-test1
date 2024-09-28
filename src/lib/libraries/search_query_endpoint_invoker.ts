@@ -1,4 +1,4 @@
-import type { AnswerAndSearchData } from '../../routes/api/searchquery/search_query_endpoint';
+import type { AnswerAndSearchData } from "$lib/libraries/types";
 import type { MyDetailSearchResult } from '../../routes/api/searchdetail/brave_search_detail';
 import { fetchBearerToken } from '$lib/libraries/request_tokens';
 
