@@ -31,7 +31,6 @@
     "@cloudflare/workers-types": "4.*",
     "@fontsource/fira-mono": "5.*",
     "@langchain/google-genai": "0.*", 
-    "@langchain/groq": "0.*",
     "@langchain/community": "0.*",
     "@neoconfetti/svelte": "2.*",
     "@sveltejs/adapter-auto": "3.*",
@@ -39,7 +38,6 @@
     "date-fns": "4.*",
     "langchain": "0.*",
     "npm-watch": "0.*",
-    "openai": "4.*",
     "tslib": "2.*"
   },
   "watch": {
