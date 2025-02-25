@@ -1,10 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { get_age_normalized, sortedByAgeNormalisedAsc, type AgeNormalisedResult } from '$lib/libraries/age_helper';
+import { SUBSCRIPTION_TOKEN } from '$lib/secrets';
+
 
 const BRAVE_WEB_SEARCH_API_ENDPOINT: string = 'https://api.search.brave.com/res/v1/web/search';
 const BRAVE_NEWS_SEARCH_API_ENDPOINT: string = 'https://api.search.brave.com/res/v1/news/search';
 const BRAVE_SUMMARIZER_API_ENDPOINT: string = 'https://api.search.brave.com/res/v1/summarizer/search';
-const SUBSCRIPTION_TOKEN: string = import.meta.env.VITE_BRAVE_SUBSCRIPTION_TOKEN || '';
 
 const DEFAULT_REQUEST_OPTIONS: Headers = new Headers({
     'Accept': 'application/json',

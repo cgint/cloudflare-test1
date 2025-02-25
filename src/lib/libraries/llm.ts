@@ -3,8 +3,7 @@ import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import { BaseChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+import { GEMINI_API_KEY } from "$lib/secrets";
 
 
 export async function invokeChain(prompt: BaseChatPromptTemplate, input: any) {

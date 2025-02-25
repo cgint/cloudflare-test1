@@ -1,3 +1,6 @@
+if (!import.meta.env.SSR) {
+    throw new Error('This section has to run in SSR mode');
+}
 
 const BEARER_TOKEN = import.meta.env.VITE_BEARER_TOKEN;
 
