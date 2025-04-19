@@ -30,7 +30,7 @@ export function getLlmFromEnvironment(): BaseChatModel {
         return new ChatGoogleGenerativeAI({
             temperature: 0.1, maxOutputTokens: 1024,
             apiKey: GEMINI_API_KEY,
-            modelName: model.replace("google/", ""),
+            model: model.replace("google/", ""),
             maxRetries: 3,
             safetySettings: [
                 {
